@@ -1,0 +1,39 @@
+{
+  "name": "loginapp",
+  "version": "1.0.0",
+  "description": "Design Competition research",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Aubhik Mazumdar, Ramana Nagasamudram",
+  "license": "ISC",
+  "dependencies": {
+    "Buffer": "0.0.0",
+    "async": "^2.6.0",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.18.2",
+    "bulma": "^0.6.2",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.16.2",
+    "express-fileupload": "^0.4.0",
+    "express-handlebars": "^3.0.0",
+    "express-messages": "^1.0.1",
+    "express-session": "^1.15.6",
+    "express-validator": "^4.3.0",
+    "formidable": "^1.2.1",
+    "handlebars-helpers": "^0.10.0",
+    "mongodb": "^3.0.1",
+    "mongoose": "^5.0.1",
+    "passport": "^0.4.0",
+    "passport-http": "^0.3.0",
+    "passport-local": "^1.0.0",
+    "python-shell": "^0.5.0",
+    "three": "^0.90.0",
+    "xmlhttprequest": "^1.8.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.18.2"
+  }
+}

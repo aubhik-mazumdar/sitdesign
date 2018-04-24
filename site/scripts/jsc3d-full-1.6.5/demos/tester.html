@@ -1,0 +1,34 @@
+<html>
+<head>
+	<title>JSC3D DEMONSTRATION by Aubhik Mazumdar</title>
+</head>
+<body>
+	<div id="main_frame" style="width:492px; margin:auto; position:relative; font-size: 9pt; color: #777777;">
+		<canvas id="cv" style="border: 1px solid;" width="490" height="368" ></canvas>
+	</div>
+	<script type="text/javascript" src="jsc3d-full-1.6.5/jsc3d.js"></script>
+	<script type="text/javascript" src="jsc3d-full-1.6.5/jsc3d.console.js"></script>
+	<script type="text/javascript" src="jsc3d-full-1.6.5/jsc3d.webgl.js"></script>
+	<!--<script type="text/javascript" src="../jsc3d.touch.js"></script>-->
+	<script type="text/javascript">
+		JSC3D.console.setup('main_frame', '120px');
+		var canvas = document.getElementById('cv');
+		var viewer = new JSC3D.Viewer(canvas);
+		viewer.setParameter('SceneUrl', 'jsc3d-full-1.6.5/demos/models/test.stl');
+		viewer.setParameter('InitRotationX', 20);
+		viewer.setParameter('InitRotationY', 20);
+		viewer.setParameter('InitRotationZ', 0);
+		viewer.setParameter('ModelColor', '#FF00');
+		viewer.setParameter('BackgroundColor1', '#0000FF');
+		viewer.setParameter('BackgroundColor2', '#6A6AD4');
+		viewer.setParameter('RenderMode', 'flat');
+		viewer.setParameter('Renderer','webgl');
+		//viewer.setParameter('SphereMapUrl', 'models/chrome.jpg');
+		viewer.init();
+		viewer.update();
+		//TO AUTOMATICALLY ROTATE THE MODEL
+		//viewer.enableDefaultInputHandler(false);
+		//setInterval(function(){viewer.rotate(0,10,0); viewer.update();},100);
+		</script>
+</body>
+</html>

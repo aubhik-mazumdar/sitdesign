@@ -1,0 +1,79 @@
+{{#if progress}}
+	<div class='container'>
+		<h4> Your design is being analyzed..</h4>
+		<div class="progress">
+  				<div class="progress-bar" id='myBar' role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">1%</div>
+		</div>
+	</div>
+{{/if}}
+<hr>
+{{#if progress}}
+{{else}}
+<div class='container'>
+<form ref='uploadForm' id='uploadForm' action='http://localhost/users/upload' name="fileForm" method='post' encType="multipart/form-data">
+	<div class='form-group'>
+		<input type="file" name="sampleFile" />
+		<input type='submit' class="btn btn-default" id='uploader' value='Upload!' />
+	</div class='form-group'>
+	<div class='form-group'>
+		MATERIAL<br>
+		<select name='material' value='Original'>
+			<option value='abs' selected>ABS</option>
+			<option value='pla'>PLA</option>
+			<option value='alloy'>ALLOY</option>
+		</select>
+	</div>
+	<div class='form-group'>
+		FORM<br>
+		<select name='structure' value='Original'>
+			<option value='mesh' selected>MESH</option>
+			<option value='solid'>SOLID</option>
+			<option value='wireframe'>WIREFRAME</option>
+		</select>
+	</div>
+	<div class="form-group">
+		<label for="exampleFormControlTextarea1">Description</label>
+		<textarea class="form-control" id="descriptiontext" name="text" rows="3" placeholder="Additional information"></textarea>
+	</div>
+	<div class='form-group'>
+		<select name='type' onchange="myFunction(this)" value='Original'>
+			<option value='Original' selected>Original</option>
+			<option value='Remixed'>Remixed</option>
+		</select>
+	</div>
+	<div id='credit' style='display:none' class='form-group'>
+		<textarea class='form-control' name='urls' placeholder="Please enter the URLs of the design(s) you have remixed, separated with a ';'"></textarea>
+	</div>
+</form>
+</div>
+{{/if}}
+<script type='text/javascript'>
+	function myFunction(that) {
+		let x = document.getElementById('credit');
+		if (that.value == 'Remixed')
+			x.style.display = 'block';
+		else
+			x.style.display = 'none';
+	}
+
+	window.onload = function() {
+		var elem = document.getElementById("myBar");
+		if(!elem)
+			return;   
+		var width = 1;
+		var id = setInterval(frame, 1000);
+		function frame() {
+			if (width >= 100) {
+				elem.innerHTML='Done';
+				clearInterval(id);
+			} 
+			else {
+				width++; 
+				elem.style.width = width + '%';
+				elem.innerHTML=width+'%';
+				elem.setAttribute('aria-valuenow',width); 
+			}
+		}
+	}
+
+</script>

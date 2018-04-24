@@ -1,0 +1,95 @@
+<div class='container'>
+    <h3 id='heading' class='text-center'>{{{title}}}</h3>
+</div>
+<br>
+<br>
+<h3 id='fileName'>{{{fileName}}}</h3>
+<div class='container'>
+    <table id='info' class='table table-dark table-bordered' style="table-layout: fixed; width: 100%">
+        <tr>
+            <td style='text-align:center'>CREATOR</td>
+            <td>{{{uname}}}</td>
+        </tr>
+        <tr>
+            <td style='text-align:center'>DESIGN NAME</td>
+            <td>{{{dname}}}</td>
+        </tr>
+        <tr>
+            <td style='text-align:center'>DESCRIPTION</td>
+            <td>{{{desp}}}</td>
+        </tr>
+        {{#is current uname}} 
+        <tr>
+            <td style='text-align:center '>SCORE</td>
+            <td style="word-wrap: break-word">{{{score}}}</td>
+        </tr>
+        {{/is}}
+        <tr>
+            <td style='text-align:center'>URL</td>
+            <td>{{{url}}}</td>
+        </tr>
+        {{#if links}}
+        <tr>
+            <td style='text-align:center'>REMIXED FROM</td>
+            <td>{{#each links}}
+                <a href='http://{{{this}}}'>{{{this}}},</a>
+                {{/each}}
+            </td>
+        </tr>
+        {{/if}}
+    </table>
+    {{!-- <div align='center' style='padding-bottom:10px'>
+        <a href='#'>
+            <button id='analyze' value='Analyze my design' class='btn-primary btn-lg' onclick='analyze()'>ANALYZE</button>
+        </a>
+    </div> --}}
+    <div id='mainFrame' align='center'>
+    </div>
+</div>
+<script type="text/javascript" src="/jsc3d.js"></script>
+<script type="text/javascript" src="/jsc3d.touch.js"></script>
+<script type="text/javascript" src="/jsc3d.console.js"></script>
+<script type="text/javascript" src="/external/Sonic/sonic.js"></script>
+<script type="text/javascript">
+    window.onload = function () {
+        let x = document.getElementById('fileName');
+        let tempPath = x.innerHTML;
+        x.style.display = 'none';
+        var d = document.createElement('canvas');
+        d.setAttribute('width', '500%');
+        d.setAttribute('height', '500%');
+        d.setAttribute('class', 'img-fluid');
+        var div = document.getElementById('mainFrame');
+        div.appendChild(d);
+        var viewer = new JSC3D.Viewer(d);
+        var logoTimerID = 0;
+        viewer.setParameter('SceneUrl', tempPath);
+        viewer.setParameter('InitRotationX', 20);
+        viewer.setParameter('InitRotationY', 20);
+        viewer.setParameter('InitRotationZ', 0);
+        viewer.setParameter('ModelColor', '#CAA618');
+        viewer.setParameter('BackgroundColor1', '#000000');
+        viewer.setParameter('BackgroundColor2', '#6A6AD4');
+        viewer.setParameter('RenderMode', 'flat');
+        viewer.setParameter('Renderer', 'webgl');
+        viewer.setParameter('SphereMapUrl', 'chrome.jpg');
+        viewer.setParameter('ProgressBar', 'off');
+        viewer.init();
+        viewer.update();
+    }
+
+    function analyze() {
+        let x = document.getElementById('info');
+        var row = x.insertRow(0);
+
+        // Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+
+        // Add some text to the new cells:
+        cell1.innerHTML = "SCORE";
+        cell1.style = 'text-align:center';
+        cell2.innerHTML = "STRENGTH: 92% , MAXIMUM SHEER STRESS: 3.96";
+        document.getElementById('analyze').style.display = 'none';
+    }
+</script>

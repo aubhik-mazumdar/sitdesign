@@ -1,0 +1,26 @@
+C0 31/3/2018 @ 12:13:43
+L1 2/4/2018 @ 12:23:43
+H0 2/4/2018 @ 12:23:44
+H1 2/4/2018 @ 12:24:44
+U0 2/4/2018 @ 1:23:02 "localhost/users/design/aubhik/dragon.step" MESH,ALLOY,FirstDesign,{"MaxDisplacement":3.602929716846383,"MaxStressValue":5.859302936831953,"MaxPrincipalMin":4.492848893519098,"MaxPrincipalMed":4.658223500852616,"MaxPrincipalMax":8.229447605628287,"MaxShearValue":3.225936301255558} R0
+H0 2/4/2018 @ 1:23:44
+H1 2/4/2018 @ 1:24:40
+D5 2/4/2018 @ 4:23:22 "localhost/users/design/johndoe/R21.stl,localhost/users/design/johndoe/R22.stl,localhost/users/design/johndoe/A11.stl,localhost/users/design/ram/R21.stl,localhost/users/design/johndoe/_current.stl"
+H0 2/4/2018 @ 4:23:44
+H1 2/4/2018 @ 12:24:44
+U0 2/4/2018 @ 4:23:32 MESH,ALLOY,FirstRemixedDesign,{"MaxDisplacement":3.602929716846383,"MaxStressValue":5.859302936831953,"MaxPrincipalMin":4.492848893519098,"MaxPrincipalMed":4.658223500852616,"MaxPrincipalMax":8.229447605628287,"MaxShearValue":3.225936301255558} R2 "localhost/users/design/ram/R11.stl,localhost/users/design/johndoe/R21.stl"
+D5 2/4/2018 @ 4:30:22 "localhost/users/design/johndoe/R21.stl,localhost/users/design/johndoe/R22.stl,localhost/users/design/johndoe/A11.stl,localhost/users/design/ram/R21.stl,localhost/users/design/johndoe/_current.stl"
+V1 2/4/2018 @ 4:33:12 "localhost/users/design/johndoe/R21.stl"
+V2 2/4/2018 @ 4:34:12
+H0 2/4/2018 @ 4:34:40
+H1 2/4/2018 @ 4:34:44
+V0 2/4/2018 @ 4:35:12 "localhost/users/design/aubhik/dragon.stl"
+V2 2/4/2018 @ 4:35:42
+H0 2/4/2018 @ 4:40:44
+H1 2/4/2018 @ 4:50:13
+L0 2/4/2018 @ 4:50:13
+C1 6/4/2018 @ 8:50:13
+
+
+
+
