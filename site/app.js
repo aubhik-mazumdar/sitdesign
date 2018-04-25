@@ -13,7 +13,7 @@ var mongoose = require('mongoose');
 var fs = require('fs');
 
 //mongoose.connect('mongodb://localhost/loginapp');
-mongoose.connect('mongodb://ec2-52-0-14-185.compute-1.amazonaws.com:27017/loginapp');
+mongoose.connect('mongodb://aubhik2:123/ec2-52-0-14-185.compute-1.amazonaws.com:27017/dummyDB');
 var db = mongoose.connection;
 
 var routes = require('./routes/index');
