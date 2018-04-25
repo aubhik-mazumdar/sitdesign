@@ -12,7 +12,7 @@ var LocalStrategy = require('passport-local').Strategy;
 var mongoose = require('mongoose');
 var fs = require('fs');
 
-#mongoose.connect('mongodb://localhost/loginapp');
+//mongoose.connect('mongodb://localhost/loginapp');
 mongoose.connect('mongodb://ec2-52-0-14-185.compute-1.amazonaws.com:27017/dummyDB');
 var db = mongoose.connection;
 
