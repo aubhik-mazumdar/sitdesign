@@ -91,7 +91,7 @@ app.use('/', routes);
 app.use('/users', users);
 
 // Set Port
-app.set('port', (80));
+app.set('port', (3000));
 
 app.listen(app.get('port'), function () {
   console.log('Server started on port ' + app.get('port'));
