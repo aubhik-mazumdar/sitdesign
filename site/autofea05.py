@@ -16,12 +16,19 @@ import sys
 import os
 import ntpath # for basename
 import argparse
-import materials
+# import materials
 import warnings
 
 warnings.filterwarnings('ignore')
-sys.path.append("C:\\Users\\Aubhik\\Desktop\\JN\\FreeCAD_0.17.13433_x64_dev_win\\FreeCAD_0.17.13433_x64_dev_win\\bin")
-sys.path.append("C:\\Users\\Aubhik\\Desktop\\JN\\FreeCAD_0.17.13433_x64_dev_win\\FreeCAD_0.17.13433_x64_dev_win\\Mod\\Fem")
+# sys.path.append("C:\\Users\\Aubhik\\Desktop\\JN\\FreeCAD_0.17.13433_x64_dev_win\\FreeCAD_0.17.13433_x64_dev_win\\bin")
+# sys.path.append("C:\\Users\\Aubhik\\Desktop\\JN\\FreeCAD_0.17.13433_x64_dev_win\\FreeCAD_0.17.13433_x64_dev_win\\Mod\\Fem")
+
+sys.path.append('/usr/lib/freecad/lib')
+
+pla = { 'Name' : 'PLA'
+      , 'YoungsModulus' : '3640 MPa'
+      , 'PoissonRatio' : '0.360'
+      , 'Density' : '1300 kg/m^3'}
 
 import FreeCAD
 import Part
@@ -51,7 +58,7 @@ class AutoFEA:
         self.create_shape_from_file()
         self.create_analysis()
         self.create_solver()
-        self.create_material(materials.pla)
+        self.create_material(pla)
         self.create_mesh()
 
     def check_file_format(self):
@@ -235,8 +242,10 @@ class AutoFEA:
         self.analysis.addObject(fixed_constraint)
 
     def run(self):
-        self.doc.recompute()
+        # self.doc.recompute()
         fea = ccxtools.FemToolsCcx(analysis=self.analysis, solver=self.solver, test_mode=False)
+        # fea.setup_working_dir('solver-tmp')
+        self.doc.recompute()
         message = fea.update_objects()
         if not message:
             fea.reset_all()
