@@ -10,10 +10,12 @@ var spawn = require("child_process").spawn;
 var PythonShell = require('python-shell');
 router.use(fileUpload());
 
-// Paths to scripts -- ensure relative
+// Paths to scripts
 var autoFeaPath = '../scripts/autofea.py'
 var convertStlPath = '../scripts/convert_to_stl.py'
-var filesPath = '../files/'
+var filesPath = '/opt/bitnami/apps/sitdesign/site/files/'
+// var scriptsPath = '../scripts/'
+var scriptsPath = '/opt/bitnami/apps/sitdesign/site/scripts/'
 
 router.get('/upload', function (req, res) {
   res.render('upload');
@@ -141,15 +143,16 @@ router.post('/upload', function (req, res) {
       //convert to stl
         var options = {
           mode: 'text',
+          pythonPath: '/usr/bin/python',
           pythonOptions: ['-u'],
           // scriptPath: 'C:/Users/Aubhik/Desktop/JN/design-contest-research/programs/autofea-v0.5',
-          scriptPath: autoFeaPath,
+          scriptPath: scriptsPath,
           // args: ['C:/Users/Aubhik/Desktop/JN/design-contest-research/site/files/' + req.user.username + '/' + sampleFile.name, dir + '/']
           args: [filesPath + req.user.username + '/' + sampleFile.name, dir + '/']
         };
         
-        // PythonShell.run('convert_to_stl.py',options, function (err,results) {
-        PythonShell.run(convertStlPath, options, function(err, results) {
+        PythonShell.run('convert_to_stl.py',options, function (err,results) {
+        // PythonShell.run(convertStlPath, options, function(err, results) {
           if (err) throw err;
           console.log('results: %j',results);
         });

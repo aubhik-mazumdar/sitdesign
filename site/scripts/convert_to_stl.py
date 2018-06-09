@@ -3,7 +3,7 @@ import os
 import ntpath # for basename
 import argparse
 
-sys.path.append('/usr/lib/freecad-daily/lib')
+sys.path.append('/usr/lib/freecad/lib')
 
 import FreeCAD
 import Part
