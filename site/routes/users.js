@@ -10,6 +10,11 @@ var spawn = require("child_process").spawn;
 var PythonShell = require('python-shell');
 router.use(fileUpload());
 
+// Paths to scripts -- ensure relative
+var autoFeaPath = '../scripts/autofea.py'
+var convertStlPath = '../scripts/convert_to_stl.py'
+var filesPath = '../files/'
+
 router.get('/upload', function (req, res) {
   res.render('upload');
 });
@@ -137,11 +142,14 @@ router.post('/upload', function (req, res) {
         var options = {
           mode: 'text',
           pythonOptions: ['-u'],
-          scriptPath: 'C:/Users/Aubhik/Desktop/JN/design-contest-research/programs/autofea-v0.5',
-          args: ['C:/Users/Aubhik/Desktop/JN/design-contest-research/site/files/' + req.user.username + '/' + sampleFile.name, dir + '/']
+          // scriptPath: 'C:/Users/Aubhik/Desktop/JN/design-contest-research/programs/autofea-v0.5',
+          scriptPath: autoFeaPath,
+          // args: ['C:/Users/Aubhik/Desktop/JN/design-contest-research/site/files/' + req.user.username + '/' + sampleFile.name, dir + '/']
+          args: [filesPath + req.user.username + '/' + sampleFile.name, dir + '/']
         };
         
-        PythonShell.run('convert_to_stl.py',options, function (err,results) {
+        // PythonShell.run('convert_to_stl.py',options, function (err,results) {
+        PythonShell.run(convertStlPath, options, function(err, results) {
           if (err) throw err;
           console.log('results: %j',results);
         });
@@ -170,7 +178,8 @@ router.post('/upload', function (req, res) {
           });
         });
         flag=1;
-        analyze("C:/Users/Aubhik/Desktop/JN/design-contest-research/site/files/"+ req.user.username + '/' + sampleFile.name, "./",req.user.username);
+        // analyze("C:/Users/Aubhik/Desktop/JN/design-contest-research/site/files/"+ req.user.username + '/' + sampleFile.name, "./",req.user.username);
+        analyze(filesPath + req.user.username + '/' + sampleFile.name, "./", req.user.username);
     }
   let d = '/' + req.user.username + '/' + xmas;
   //store file in MongoDB database
@@ -228,7 +237,8 @@ function analyze(infile,outdir,username){
 
 function autofea_run(infile, savedir, res_callback, end_callback) {
   console.log('autofeaRun started');
-  let autofea = spawn('python', ['C:/Users/Aubhik/Desktop/JN/design-contest-research/programs/autofea-v0.5/autofea05.py', infile, '-s', savedir]);
+  // let autofea = spawn('python', ['C:/Users/Aubhik/Desktop/JN/design-contest-research/programs/autofea-v0.5/autofea05.py', infile, '-s', savedir]);
+  let autofea = spawn('python', [autoFeaPath, infile, '-s', savedir]);
   result_str = '';
   let flag=0;
   autofea.stdout.on('data', (data) => {
