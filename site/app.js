@@ -13,9 +13,7 @@ var mongoose = require('mongoose');
 var fs = require('fs');
 
 //mongoose.connect('mongodb://localhost/loginapp');
-// mongoose.connect('mongodb://aubhik2:12345@ec2-18-206-38-68.compute-1.amazonaws.com:27017/loginapp');
 mongoose.connect('mongodb://rmn:12345@ec2-54-209-241-188.compute-1.amazonaws.com:27017/loginapp');
-//mongoose.connect('mongodb://aubhik:12345@18.206.38.68/loginapp');
 var db = mongoose.connection;
 
 var routes = require('./routes/index');
