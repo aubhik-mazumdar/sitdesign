@@ -24,3 +24,13 @@ C1 6/4/2018 @ 8:50:13
 
 
 
+
+D19 16/6/2018 @ 1:19:40 O:/rmn/R21.stl,/rmn/R11.stl,/akira/R11.stl,/akira/nema_brack.stl,/akira/A31.stl,/akira/Knight.stl,/akira/sofa.stl,/cliu1/A11.stl,/cliu1/A12.stl,/cliu1/A21.stl,/cliu2/R11.stl,/cliu2/D1.stl,/cliu3/R21.stl,/cliu3/nothing.stl,/cliu3/R21.stl,/jamestest1/2020-bracket.stl,/jamestest1/L_Bracket.stl,/jamestest1/MakeBlockEl_v4.stl R:/cliu2/cliu2-D2-remix-of-D1.stl
+V1 16/6/2018 @ 1:19:56 http://54.209.241.188/users/design/cliu2/cliu2-D2-remix-of-D1.stl
+D19 16/6/2018 @ 1:20:8 O:/rmn/R21.stl,/rmn/R11.stl,/akira/R11.stl,/akira/nema_brack.stl,/akira/A31.stl,/akira/Knight.stl,/akira/sofa.stl,/cliu1/A11.stl,/cliu1/A12.stl,/cliu1/A21.stl,/cliu2/R11.stl,/cliu2/D1.stl,/cliu3/R21.stl,/cliu3/nothing.stl,/cliu3/R21.stl,/jamestest1/2020-bracket.stl,/jamestest1/L_Bracket.stl,/jamestest1/MakeBlockEl_v4.stl R:/cliu2/cliu2-D2-remix-of-D1.stl
+V1 16/6/2018 @ 1:20:40 http://54.209.241.188/users/design/jamestest1/MakeBlockEl_v4.stl
+V1 16/6/2018 @ 1:20:49 http://54.209.241.188/users/design/jamestest1/2020-bracket.stl
+V1 16/6/2018 @ 1:20:55 http://54.209.241.188/users/design/cliu2/R11.stl
+V0 16/6/2018 @ 1:21:1 http://54.209.241.188/users/design/aubhik/A12.stl
+V0 16/6/2018 @ 1:21:5 http://54.209.241.188/users/design/aubhik/A21.stl
+L0 16/6/2018 @ 1:21:15

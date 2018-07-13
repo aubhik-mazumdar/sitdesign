@@ -1,0 +1,20 @@
+
+D8 11/6/2018 @ 0:41:20 O:/aubhik/A12.stl,/aubhik/A21.stl,/akira/R11.stl,/akira/nema_brack.stl,/akira/A31.stl,/akira/Knight.stl,/akira/sofa.stl R:/aubhik/A22.stl
+V0 11/6/2018 @ 0:41:28 http://54.209.241.188/users/design/rmn/R21.stl
+U0 11/6/2018 @ 0:52:31 R11.stepOriginal
+D8 11/6/2018 @ 0:52:36 O:/aubhik/A12.stl,/aubhik/A21.stl,/akira/R11.stl,/akira/nema_brack.stl,/akira/A31.stl,/akira/Knight.stl,/akira/sofa.stl R:/aubhik/A22.stl
+V0 11/6/2018 @ 0:52:41 http://54.209.241.188/users/design/rmn/R11.stl
+D8 11/6/2018 @ 0:52:48 O:/aubhik/A12.stl,/aubhik/A21.stl,/akira/R11.stl,/akira/nema_brack.stl,/akira/A31.stl,/akira/Knight.stl,/akira/sofa.stl R:/aubhik/A22.stl
+V0 11/6/2018 @ 0:52:52 http://54.209.241.188/users/design/rmn/R11.stl
+V0 11/6/2018 @ 0:53:4 http://54.209.241.188/users/design/rmn/R11.stl
+D8 11/6/2018 @ 0:53:7 O:/aubhik/A12.stl,/aubhik/A21.stl,/akira/R11.stl,/akira/nema_brack.stl,/akira/A31.stl,/akira/Knight.stl,/akira/sofa.stl R:/aubhik/A22.stl
+V0 11/6/2018 @ 0:55:42 http://54.209.241.188/users/design/rmn/R11.stl
+D11 14/6/2018 @ 22:14:15 O:/aubhik/A12.stl,/aubhik/A21.stl,/akira/R11.stl,/akira/nema_brack.stl,/akira/A31.stl,/akira/Knight.stl,/akira/sofa.stl,/cliu1/A11.stl,/cliu1/A12.stl,/cliu1/A21.stl R:/aubhik/A22.stl
+V1 14/6/2018 @ 22:14:20 http://54.209.241.188/users/design/aubhik/A22.stl
+L0 14/6/2018 @ 22:14:32
+D11 14/6/2018 @ 22:14:48 O:/aubhik/A12.stl,/aubhik/A21.stl,/akira/R11.stl,/akira/nema_brack.stl,/akira/A31.stl,/akira/Knight.stl,/akira/sofa.stl,/cliu1/A11.stl,/cliu1/A12.stl,/cliu1/A21.stl R:/aubhik/A22.stl
+D11 14/6/2018 @ 22:14:51 O:/aubhik/A12.stl,/aubhik/A21.stl,/akira/R11.stl,/akira/nema_brack.stl,/akira/A31.stl,/akira/Knight.stl,/akira/sofa.stl,/cliu1/A11.stl,/cliu1/A12.stl,/cliu1/A21.stl R:/aubhik/A22.stl
+D11 14/6/2018 @ 22:14:52 O:/aubhik/A12.stl,/aubhik/A21.stl,/akira/R11.stl,/akira/nema_brack.stl,/akira/A31.stl,/akira/Knight.stl,/akira/sofa.stl,/cliu1/A11.stl,/cliu1/A12.stl,/cliu1/A21.stl R:/aubhik/A22.stl
+D11 14/6/2018 @ 22:18:37 O:/aubhik/A12.stl,/aubhik/A21.stl,/akira/R11.stl,/akira/nema_brack.stl,/akira/A31.stl,/akira/Knight.stl,/akira/sofa.stl,/cliu1/A11.stl,/cliu1/A12.stl,/cliu1/A21.stl R:/aubhik/A22.stl
+V1 14/6/2018 @ 22:18:41 http://54.209.241.188/users/design/cliu1/A21.stl
+D11 14/6/2018 @ 22:20:22 O:/aubhik/A12.stl,/aubhik/A21.stl,/akira/R11.stl,/akira/nema_brack.stl,/akira/A31.stl,/akira/Knight.stl,/akira/sofa.stl,/cliu1/A11.stl,/cliu1/A12.stl,/cliu1/A21.stl R:/aubhik/A22.stl

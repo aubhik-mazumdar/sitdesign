@@ -1,0 +1,1 @@
+A simple angle bracket with straight edges all around.

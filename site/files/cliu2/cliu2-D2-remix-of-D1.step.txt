@@ -1,0 +1,1 @@
+A remix of D1 that removes some of the material on the inside to allow for lighter weight, but not sacrificing too much strength or stability.
