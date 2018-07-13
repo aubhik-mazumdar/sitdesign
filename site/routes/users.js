@@ -12,11 +12,29 @@ var nodemailer = require('nodemailer');
 
 router.use(fileUpload());
 
-var autoFeaPath = '../scripts/autofea.py'
-var convertStlPath = '../scripts/convert_to_stl.py'
-var filesPath = '/opt/bitnami/apps/sitdesign/site/files/'
-// var scriptsPath = '../scripts/'
-var scriptsPath = '/opt/bitnami/apps/sitdesign/site/scripts/'
+var autoFeaPath = '../scripts/autofea.py';
+var convertStlPath = '../scripts/convert_to_stl.py';
+var filesPath = '/opt/bitnami/apps/sitdesign/site/files/';
+var scriptsPath = '../scripts/';
+// var scriptsPath = '/opt/bitnami/apps/sitdesign/site/scripts/'
+
+
+/* Work with conditions
+ * For now we place each user alternatively in two conditions -
+ * 1) Nearest
+ * 2) Farthest
+ * Those in the Nearest condition get shown similar designs and 
+ * those in the Farthest condition get shown dissimilar designs
+ */
+function* conditionGenerator(conditions) {
+    let idx = 0;
+    while (true) {
+	yield conditions[idx];
+	idx = (idx + 1) % steps.length;
+    }
+}
+
+let getCondition = conditionGenerator(['nearest', 'farthest']);
 
 router.get('/upload', function (req, res) {
   res.render('upload');
@@ -33,6 +51,12 @@ router.get('/register', function (req, res) {
 router.get('/login', function (req, res) {
   res.render('login');
 });
+
+// trying out some stuff
+// router.get('/example', function(req, res) {
+//     res.render('example');
+// });
+
 
 router.post('/register', function (req, res) {
   var name = req.body.name;
@@ -56,10 +80,11 @@ router.post('/register', function (req, res) {
     });
   } else {
     var newUser = new User({
-      name: name,
-      email: email,
-      username: username,
-      password: password
+	name: name,
+	email: email,
+	username: username,
+	password: password,
+	condition: getCondition()
     });
     User.createUser(newUser, function (err, user) {
       if (err) throw err;
@@ -389,6 +414,16 @@ router.get('/logout', function (req, res) {
   res.redirect('/users/login');
 });
 
+router.get('/userinfo', function(req, res) {
+    let user = req.user;
+    res.render('userinfo', {
+	uname: user.username,
+	email: user.email,
+	name: user.name,
+	condition: user.condition,
+	nfiles: user.files.length
+    });
+});
 
 router.get('/delete/:userId/:designName', function (req, res) {
   var currUser = req.user.username;
