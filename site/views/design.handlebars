@@ -20,8 +20,8 @@
         </tr>
         {{#is current uname}} 
         <tr>
-            <td style='text-align:center '>SCORE</td>
-            <td style="word-wrap: break-word">{{{score}}}</td>
+            <td style='text-align:center'>SCORE</td>
+            <td style="word-wrap:break-word">{{{score}}}</td>
         </tr>
         {{/is}}
         <tr>
@@ -37,6 +37,18 @@
             </td>
         </tr>
         {{/if}}
+        <tr>
+          <td style='text-align:center'>Volume</td>
+          <td style='word-wrap:break-word'>{{{volume}}}</td>
+        </tr>
+        <tr>
+          <td style='text-align:center'>Number of Faces</td>
+          <td style='word-wrap:break-word'>{{{faces}}}</td>
+        </tr>
+        <tr>
+          <td style='text-align:center'>Average Face Area</td>
+          <td style='word-wrap:break-word'>{{{avg_face_area}}}</td>
+        </tr>
     </table>
     {{!-- <div align='center' style='padding-bottom:10px'>
         <a href='#'>

@@ -9,6 +9,7 @@ var fs = require('fs');
 var spawn = require("child_process").spawn;
 var PythonShell = require('python-shell');
 var nodemailer = require('nodemailer');
+var config = require('./config');
 
 router.use(fileUpload());
 
@@ -193,24 +194,19 @@ router.post('/upload', function (req, res) {
 					   console.log("The file was saved!");
 				       });
 		  });
+
+    console.log(req.user);
+    
     //If file is a STEP file
     if (sampleFile.name.match(/.step/i)) {
 	//convert to stl
 	var options = {
 	    mode: 'text',
-	    pythonPath: '/usr/bin/python',
+	    pythonPath: '/usr/bin/python2',
 	    pythonOptions: ['-u'],
-	    // scriptPath: 'C:/Users/Aubhik/Desktop/JN/design-contest-research/programs/autofea-v0.5',
-	    scriptPath: scriptsPath,
-	    // args: ['C:/Users/Aubhik/Desktop/JN/design-contest-research/site/files/' + req.user.username + '/' + sampleFile.name, dir + '/']
-	    args: [filesPath + req.user.username + '/' + sampleFile.name, dir + '/']
-	};
-	// var options = {
-	//   mode: 'text',
-	//   pythonOptions: ['-u'],
-	//   scriptPath: 'C:/Users/Aubhik/Desktop/JN/design-contest-research/programs/autofea-v0.5',
-	//   args: ['C:/Users/Aubhik/Desktop/JN/design-contest-research/site/files/' + req.user.username + '/' + sampleFile.name, dir + '/']
-	// };
+	    scriptPath: config.scriptsPath,
+	    args: [config.filesPath + req.user.username + '/' + sampleFile.name, dir + '/']
+	}
 
 	PythonShell.run('convert_to_stl.py', options, function (err, results) {
 	    if (err) throw err;
@@ -281,7 +277,8 @@ router.post('/upload', function (req, res) {
     req.flash('success_msg', "File uploaded successfully!");
     console.log("File uploaded successfully");
     res.render('upload', {
-	filename: sampleFile.name,
+	// filename: sampleFile.name,
+	filename: xmas,
 	progress: 'true'
     });
 });
