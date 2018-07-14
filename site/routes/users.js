@@ -406,6 +406,13 @@ router.get('/homepage', function (req, res) {
     });
 });
 
+/* recommend :: (User Info, [Design]) -> [Design] */
+function recommend(user_info, world) {
+    nsubmits = user_info.files.length;
+    prev = user_info.files[nsubmits-1];
+    /* TODO */
+}
+
 router.get('/explore', function (req, res) {
     var temp = [];
     let remixed = [];
