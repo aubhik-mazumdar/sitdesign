@@ -154,6 +154,8 @@ passport.deserializeUser(function (id, done) {
     });
 });
 
+
+/* Rewrite Function */
 router.post('/upload', function (req, res) {
     if (!req.files.sampleFile) {
 	req.flash('error_msg', 'Please choose a file');
@@ -200,48 +202,88 @@ router.post('/upload', function (req, res) {
     //If file is a STEP file
     if (sampleFile.name.match(/.step/i)) {
 	//convert to stl
-	var options = {
+	var convert_options = {
 	    mode: 'text',
 	    pythonPath: '/usr/bin/python2',
 	    pythonOptions: ['-u'],
 	    scriptPath: config.scriptsPath,
 	    args: [config.filesPath + req.user.username + '/' + sampleFile.name, dir + '/']
-	}
+	};
 
-	PythonShell.run('convert_to_stl.py', options, function (err, results) {
+	PythonShell.run('convert_to_stl.py', convert_options, function (err, results) {
 	    if (err) throw err;
-	    console.log('results: %j', results);
+	    console.log('convert_to_stl.py -- results: %j', results);
 	});
+
+	/* The script `distance.py` prints out the "coordinates" of the design in a
+	   space where the basis is given by {volume, avg face area, number of faces} */
+	var distance_options = {
+	    mode: 'text',
+	    pythonPath: '/usr/bin/python2',
+	    pythonOptions: ['-u'],
+	    scriptPath: config.scriptsPath,
+	    args: [config.filesPath + req.user.username + '/' + sampleFile.name]
+	};
+
+	var design_props = {
+	    volume: undefined,
+	    avg_face_area: undefined,
+	    nfaces: undefined
+	};
+
+	PythonShell.run('distance.py', distance_options, function(err, results) {
+	    if (err) throw err;
+	    console.log('distance.py -- results: %j', results);
+	    l = results.length;
+	    design_props.volume = Number(results[l-3]);
+	    design_props.avg_face_area = Number(results[l-2]);
+	    design_props.nfaces = Number(results[l-1]);
+	});
+
+	console.log("design_props:");
+	console.log(design_props);
 
 	xmas = sampleFile.name.replace(/.step/i, '.stl');
 	let d = '/' + req.user.username + '/' + xmas;
-	User.findOne({
-	    'username': req.user.username
-	}, function (err, user) {
-	    if (option == 'Remixed') {
-		user.files.push({
-		    'description': t,
-		    'path': d,
-		    'type': option,
-		    'urls': urls,
-		    'score': info
+
+	PythonShell.run('distance.py', distance_options, function(err, results) {
+	    if (err) throw err;
+
+	    console.log('distance.py -- results: %j', results);
+	    l = results.length;
+	    volume = Number(results[l-3]);
+	    avg_face_area = Number(results[l-2]);
+	    nfaces = Number(results[l-1]);
+
+	    fobj = {
+		'desription': t,
+		'path': d,
+		'type': option,
+		'urls': urls,
+		'score': info,
+		'volume': volume,
+		'avg_face_area': avg_face_area,
+		'nfaces': nfaces
+	    };
+	    
+	    User.findOne({ 'username': req.user.username }, function(err, user) {
+		if (option != 'Remixed') {
+		    delete fobj.urls;
+		}
+		user.files.push(fobj);
+		console.log(fobj);
+		user.save((err) => {
+		    if (err) throw err; 
 		});
-	    } else {
-		user.files.push({
-		    'description': t,
-		    'path': d,
-		    'type': option,
-		    'score': info
-		});
-	    }
-	    user.save(function (err) {
-		if (err) throw err;
 	    });
 	});
+
 	flag = 1;
 	//analyze("C:/Users/Aubhik/Desktop/JN/design-contest-research/site/files/" + req.user.username + '/' + sampleFile.name, "./", req.user.username);
 	analyze(filesPath + req.user.username + '/' + sampleFile.name, "./", req.user.username);
     }
+
+
     let d = '/' + req.user.username + '/' + xmas;
     //store file in MongoDB database
     if (!flag) {
@@ -255,14 +297,22 @@ router.post('/upload', function (req, res) {
 		    'path': d,
 		    'type': option,
 		    'urls': urls,
-		    'score': info
+		    'score': info,
+		    'coordinates': design_props,
+		    'volume': design_props.volume, /* duplication of information, I know */
+		    'avg_face_area': design_props.avg_face_area,
+		    'nfaces': design_props.nfaces		    
 		});
 	    } else {
 		user.files.push({
 		    'description': t,
 		    'path': d,
 		    'type': option,
-		    'score': info
+		    'score': info,
+		    'coordinates': design_props,
+		    'volume': design_props.volume, /* duplication of information, I know */
+		    'avg_face_area': design_props.avg_face_area,
+		    'nfaces': design_props.nfaces		    
 		});
 	    }
 	    user.save(function (err) {
@@ -459,6 +509,9 @@ router.get('/design/:userId/:designName', function (req, res) {
     var dsp;
     var urls;
     var s;
+    var volume;
+    var avg_face_area;
+    var nfaces;
     User.findOne({
 	'username': req.params.userId
     }, function (err, user) {
@@ -471,6 +524,18 @@ router.get('/design/:userId/:designName', function (req, res) {
 		    s = 'no score currently';
 		if (user.files[i].type == 'Remixed')
 		    urls = user.files[i].urls;
+
+		volume = user.files[i].volume;
+		avg_face_area = user.files[i].avg_face_area;
+		nfaces = user.files[i].nfaces;
+
+		console.log("got the following parameters for " + temp2);
+		console.log("Volume: " + volume);
+		console.log("Avg Face Area: " + avg_face_area);
+		console.log("Num Faces: " + nfaces);
+
+		console.log("user.files[i]:")
+		console.log(user.files[i])
 	    }
 	}
 	if (!dsp)
@@ -496,6 +561,9 @@ router.get('/design/:userId/:designName', function (req, res) {
 	    desp: dsp,
 	    url: req.hostname + '/users' + req.path,
 	    score: s,
+	    volume: volume,
+	    nfaces: nfaces,
+	    avg_face_area: avg_face_area,
 	    links: urls
 	});
     });
