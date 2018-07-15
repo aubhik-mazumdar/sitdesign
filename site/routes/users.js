@@ -13,12 +13,105 @@ var config = require('./config');
 
 router.use(fileUpload());
 
-var autoFeaPath = '../scripts/autofea.py';
-var convertStlPath = '../scripts/convert_to_stl.py';
-var filesPath = '/opt/bitnami/apps/sitdesign/site/files/';
-var scriptsPath = '../scripts/';
-// var scriptsPath = '/opt/bitnami/apps/sitdesign/site/scripts/'
+/* global distance matrix */
+var DISTANCE_MATRIX = new Object();
 
+/* global list of all designs */
+var DESIGNS = new Array();
+
+/* global number of designs to recommend */
+var N_RECOMMS = 3;
+
+/* updateDistanceMatrix: To be run everytime a new design is uploaded
+   relies on the global variable DESIGNS. Updates global variable
+   DISTANCE_MATRIX */
+function updateDistanceMatrix() {
+    let parameters = ['volume', 'avg_face_area', 'nfaces']; /* Read from a config file later on */
+
+    /* Iterate through the list of all DESIGNS */
+    for (let i of DESIGNS) {
+	let ip = stripPath(i.design.path);
+	DISTANCE_MATRIX[ip] = {};
+	for (let j of DESIGNS) {
+	    let jp = stripPath(j.design.path);
+	    if (ip == jp) /* Distance between same designs is 0 */
+		continue;
+	    let dist = calculateDistance(i.design, j.design);
+	    DISTANCE_MATRIX[ip][jp] = dist;
+	}
+    }
+    return;
+}
+
+/* startupCompute: Perform computations that are currently necessary
+   at startup. This includes computing the distance matrix and updating
+   the list of all designs.
+   ! This is a temporary function and should be removed at a later stage */
+function startupCompute() {
+    User.find({}, (err, users) => {
+	console.log(users);
+	// DESIGNS = new Array();
+	for (let user of users) {
+	    console.log(user);
+	    for (let design of user.files) {
+		DESIGNS.push({'user': user.username, 'design': design});		
+	    }
+	}
+	updateDistanceMatrix();
+	console.log("DISTANCE MATRIX");
+	console.log(DISTANCE_MATRIX);
+    });
+}
+
+startupCompute(); /* !!!!!!!!!!!!!!!!!!! */
+
+/* Returns L2 norm. Each design is represented by the tuple
+   (log(volume), log(avg_face_area), nfaces) */
+function calculateDistance(d1, d2) {
+    let v = (d1.volume - d2.volume)**2;
+    let f = (d1.nfaces - d2.nfaces)**2;
+    let a = (d1.avg_face_area - d2.avg_face_area)**2;
+    return Math.sqrt(v + f + a);
+}
+
+/* recommend :: UserInfo -> [Designs]
+   relies on global variable DISTANCE_MATRIX and N_RECOMMS */
+function recommend(user) {
+    let n_submits = user.files.length;
+
+    if (n_submits == 0) {
+	return DESIGNS.slice(0, N_RECOMMS);
+    }
+    
+    let prev_submit = user.files[n_submits-1]; /* prev_submit :: Design */
+    let prev = stripPath(prev_submit.path);
+
+    console.log("RECOMMENDING FOR USER: " + user.username);
+    console.log("PREVIOUS DESIGN: " + prev);
+    console.log("DISTANCES :-");
+    console.log(DISTANCE_MATRIX[prev]);
+
+    let dists = DISTANCE_MATRIX[prev];
+    /* Sort distances and use user.condition to return appropriate results */
+    let tmp = new Array();
+    for (let o in dists)
+	tmp.push([o, dists[o]]);
+
+    if (user.condition == 'nearest')
+	tmp.sort((a,b) => a[1] - b[1]); /* sorts in ascending order */
+    else
+	tmp.sort((a,b) => b[1] - a[1]);
+
+    console.log("RECOMMENDATIONS: ");
+    console.log(tmp.map((e) => e[0] + '.stl').slice(0, N_RECOMMS));
+    return tmp.map((e) => e[0] + '.stl').slice(0, N_RECOMMS);
+}
+
+/* Might have to change this function based on path naming conventions
+   As of now, we can expect this to remove '.stl' from a path */
+function stripPath(p) {
+    return p.substring(0, p.length-4);
+}
 
 /* Work with conditions
  * For now we place each user alternatively in two conditions -
@@ -52,12 +145,6 @@ router.get('/register', function (req, res) {
 router.get('/login', function (req, res) {
     res.render('login');
 });
-
-// trying out some stuff
-// router.get('/example', function(req, res) {
-//     res.render('example');
-// });
-
 
 router.post('/register', function (req, res) {
     var name = req.body.name;
@@ -225,24 +312,6 @@ router.post('/upload', function (req, res) {
 	    args: [config.filesPath + req.user.username + '/' + sampleFile.name]
 	};
 
-	var design_props = {
-	    volume: undefined,
-	    avg_face_area: undefined,
-	    nfaces: undefined
-	};
-
-	PythonShell.run('distance.py', distance_options, function(err, results) {
-	    if (err) throw err;
-	    console.log('distance.py -- results: %j', results);
-	    l = results.length;
-	    design_props.volume = Number(results[l-3]);
-	    design_props.avg_face_area = Number(results[l-2]);
-	    design_props.nfaces = Number(results[l-1]);
-	});
-
-	console.log("design_props:");
-	console.log(design_props);
-
 	xmas = sampleFile.name.replace(/.step/i, '.stl');
 	let d = '/' + req.user.username + '/' + xmas;
 
@@ -265,13 +334,21 @@ router.post('/upload', function (req, res) {
 		'avg_face_area': avg_face_area,
 		'nfaces': nfaces
 	    };
-	    
+
+	    DESIGNS.push({'user': req.user.username, 'design': fobj});
+
+	    // console.log("DESIGNS :");
+	    // console.log(DESIGNS);
+
+	    updateDistanceMatrix();
+	    console.log("DISTANCE MATRIX");
+	    console.log(DISTANCE_MATRIX);
+
 	    User.findOne({ 'username': req.user.username }, function(err, user) {
 		if (option != 'Remixed') {
 		    delete fobj.urls;
 		}
 		user.files.push(fobj);
-		console.log(fobj);
 		user.save((err) => {
 		    if (err) throw err; 
 		});
@@ -280,11 +357,11 @@ router.post('/upload', function (req, res) {
 
 	flag = 1;
 	//analyze("C:/Users/Aubhik/Desktop/JN/design-contest-research/site/files/" + req.user.username + '/' + sampleFile.name, "./", req.user.username);
-	analyze(filesPath + req.user.username + '/' + sampleFile.name, "./", req.user.username);
+	analyze(config.filesPath + req.user.username + '/' + sampleFile.name, "./", req.user.username);
     }
 
-
     let d = '/' + req.user.username + '/' + xmas;
+
     //store file in MongoDB database
     if (!flag) {
 	User.findOne({
@@ -320,6 +397,7 @@ router.post('/upload', function (req, res) {
 	    });
 	});
     }
+
     let datetime = getDate();
     let data = '\nU0 ' + datetime + ' ' + sampleFile.name + option + urls;
     let pth = path.join(__dirname, '../files', req.user.username, req.user.username + '_log.txt');
@@ -406,12 +484,35 @@ router.get('/homepage', function (req, res) {
     });
 });
 
-/* recommend :: (User Info, [Design]) -> [Design] */
-function recommend(user_info, world) {
-    nsubmits = user_info.files.length;
-    prev = user_info.files[nsubmits-1];
-    /* TODO */
-}
+router.get('/recommendations', (req, res) => {
+    User.getUserByUsername(req.user.username, (err, user) => {
+	let recomms = recommend(user);
+
+	/* Note: prev_design is also computed in `recommend` */
+	let n_submits = user.files.length;
+	let prev_design = undefined;
+	let prev_name = undefined;
+	if (n_submits > 0) {
+	    prev_design = user.files[n_submits-1];
+	    prev_name = prev_design.path;
+	}
+
+	/* Logging
+	   TODO: Abstract away to a function */
+
+	// let datetime = getDate();
+	// let number_of_files = recomms.length;
+	// let data = '\nD' + number_of_files + ' ' + datetime + ' O:' + original.toString() + ' R:' + remixed.toString();
+	// let pth = path.join(__dirname, '../files', req.user.username, req.user.username + '_log.txt');
+	// log(data,pth);
+
+	res.render('recommendations', {
+	    org: recomms,
+	    usr: prev_design,
+	    prevName: prev_name
+	});
+    });
+});
 
 router.get('/explore', function (req, res) {
     var temp = [];
@@ -419,8 +520,6 @@ router.get('/explore', function (req, res) {
     let original = [];
     User.find({}, function (err, user) {
 	for (let obj of user) {
-	    if (obj.username == req.user.username)
-		continue;
 	    for (let j = 0; j < obj.files.length; j++) {
 		if (obj.files[j].type == "Remixed")
 		    remixed.push(obj.files[j].path);
@@ -428,11 +527,16 @@ router.get('/explore', function (req, res) {
 		    original.push(obj.files[j].path);
 	    }
 	}
+
 	let datetime = getDate();
 	let number_of_files = remixed.length + original.length;
 	let data = '\nD' + number_of_files + ' ' + datetime + ' O:' + original.toString() + ' R:' + remixed.toString();
 	let pth = path.join(__dirname, '../files', req.user.username, req.user.username + '_log.txt');
 	log(data,pth);
+
+	console.log("ORIGINAL");
+	console.log(original);
+	
 	res.render('explore', {
 	    rem: remixed,
 	    org: original

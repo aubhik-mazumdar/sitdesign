@@ -1,8 +1,14 @@
-<h1 style='width:120%;text-align:center'>EXPLORE</h1>
-<code>As it stands, this page is for internal use. The information contained within might not be visible
-  to competitors.</code>
+<h2 style='text-align:center'>Last Submitted Design</h2>
+<br>
 <div class='container'>
-	<h3 class='text-center'>ORIGINAL FILES</h3>
+  <code id='prevName'>{{{prevName}}}</code>
+  <div id='previous' align='center'>
+  </div>
+  <br>
+  <br>
+</div>
+<h2>Recommendations</h2>
+<div class='container'>
 	<div id='original' class='row'>
 		<ul id='originallist'>
 			{{#each org}}
@@ -11,21 +17,43 @@
 		</ul>
 	</div>
 	<br>
-	<h3 class='text-center'>REMIXED FILES</h3>
-	<div id='remixed' class='row'>
-		<ul id='remixedlist'>
-			{{#each rem}}
-			<li>{{this}}</li>
-			{{/each}}
-		</ul>
-	</div>
 </div>
+<br><br><br><br>
+<code>Of course, the UI will change.</code>
 <script type="text/javascript" src="/jsc3d.js"></script>
 <script type="text/javascript" src="/jsc3d.touch.js"></script>
 <script type="text/javascript" src="/jsc3d.console.js"></script>
 <script type="text/javascript" src="/external/Sonic/sonic.js"></script>
 <script type="text/javascript">
 	window.onload = function () {
+                let model_color = '#caa618';
+                let background1 = '#ffffff';
+                let background2 = '#ffffff';
+                
+                // Render users previous design
+                let px = document.getElementById('prevName');
+                let prevPath = px.innerHTML;
+                let xu = document.getElementById('previous');
+                let du = document.createElement('canvas');
+                du.setAttribute('width', '300%');
+                du.setAttribute('height', '300%');
+                du.setAttribute('class', 'img-fluid');
+                xu.appendChild(du);;
+                var prev_viewer = new JSC3D.Viewer(du);
+                prev_viewer.setParameter('SceneUrl', prevPath);
+                prev_viewer.setParameter('InitRotationX', 20);
+                prev_viewer.setParameter('InitRotationY', 20);
+                prev_viewer.setParameter('InitRotationZ', 0);
+                prev_viewer.setParameter('ModelColor', model_color);
+                prev_viewer.setParameter('BackgroundColor1', background1);
+                prev_viewer.setParameter('BackgroundColor2', background2);
+                prev_viewer.setParameter('RenderMode', 'flat');
+                prev_viewer.setParameter('Renderer', 'webgl');
+                prev_viewer.setParameter('ProgressBar', 'off');
+                prev_viewer.init();
+                prev_viewer.update();
+
+                // --- Aubhik ---
 		let z = document.getElementById('original');
 		let x = document.getElementById('originallist');
 		let items = x.getElementsByTagName('li');
@@ -79,9 +107,12 @@
 			viewer.setParameter('InitRotationX', 20);
 			viewer.setParameter('InitRotationY', 20);
 			viewer.setParameter('InitRotationZ', 0);
-			viewer.setParameter('ModelColor', '#ffff00');
-			viewer.setParameter('BackgroundColor1', '#6A6AD4');
-			viewer.setParameter('BackgroundColor2', '#6A6AD4');
+			// viewer.setParameter('ModelColor', '#ffff00');
+                        viewer.setParameter('ModelColor', model_color);
+			// viewer.setParameter('BackgroundColor1', '#6A6AD4');
+                        viewer.setParameter('BackgroundColor1', '#FFFFFF');
+			// viewer.setParameter('BackgroundColor2', '#6A6AD4');
+                        viewer.setParameter('BackgroundColor2', '#FFFFFF');
 			viewer.setParameter('RenderMode', 'flat');
 			viewer.setParameter('Renderer', 'webgl');
 			//viewer.setParameter('SphereMapUrl', 'chrome.jpg');
