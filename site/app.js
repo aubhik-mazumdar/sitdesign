@@ -13,8 +13,8 @@ var mongoose = require('mongoose');
 var fs = require('fs');
 
 //mongoose.connect('mongodb://localhost/loginapp');
-//mongoose.connect('mongodb://rmn:12345@ec2-54-209-241-188.compute-1.amazonaws.com:27017/loginapp');
-mongoose.connect('mongodb://localhost/loginapp');
+mongoose.connect('mongodb://rmn:12345@ec2-54-209-241-188.compute-1.amazonaws.com:27017/loginapp2');
+//mongoose.connect('mongodb://localhost/loginapp');
 var db = mongoose.connection;
 
 var routes = require('./routes/index');
@@ -86,7 +86,6 @@ app.use(function (req, res, next) {
   res.locals.user = req.user || null;
   next();
 });
-
 
 
 app.use('/', routes);

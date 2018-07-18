@@ -80,7 +80,10 @@ function recommend(user) {
     let n_submits = user.files.length;
 
     if (n_submits == 0) {
-	return DESIGNS.slice(0, N_RECOMMS);
+	console.log("RECOMMEDING");
+	let r = DESIGNS.slice().sort(() => .5 - Math.random()).slice(0, N_RECOMMS);
+	console.log(r);
+	return r.map((e) => e.design.path);
     }
     
     let prev_submit = user.files[n_submits-1]; /* prev_submit :: Design */
@@ -102,9 +105,10 @@ function recommend(user) {
     else
 	tmp.sort((a,b) => b[1] - a[1]);
 
+    let diffdsgn = (e) => user.files.map((d) => d.path).indexOf(e) == -1
     console.log("RECOMMENDATIONS: ");
-    console.log(tmp.map((e) => e[0] + '.stl').slice(0, N_RECOMMS));
-    return tmp.map((e) => e[0] + '.stl').slice(0, N_RECOMMS);
+    console.log(tmp.map((e) => e[0] + '.stl').filter(diffdsgn).slice(0, N_RECOMMS));
+    return tmp.map((e) => e[0] + '.stl').filter(diffdsgn).slice(0, N_RECOMMS);
 }
 
 /* Might have to change this function based on path naming conventions
@@ -198,7 +202,8 @@ router.post('/register', function (req, res) {
 
 function log(data, pathToFile) {
     fs.open(pathToFile, 'a', (err, fd) => {
-	if (err) throw err;
+	if (err) // throw err;
+	    return;
 	fs.appendFile(fd, data, 'utf8', (err) => {
 	    fs.close(fd, (err) => {
 		if (err) throw err;
