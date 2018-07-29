@@ -13,8 +13,8 @@ var mongoose = require('mongoose');
 var fs = require('fs');
 
 //mongoose.connect('mongodb://localhost/loginapp');
-mongoose.connect('mongodb://rmn:12345@ec2-54-209-241-188.compute-1.amazonaws.com:27017/loginapp2');
-//mongoose.connect('mongodb://localhost/loginapp');
+//mongoose.connect('mongodb://rmn:12345@ec2-54-209-241-188.compute-1.amazonaws.com:27017/loginapp2');
+mongoose.connect('mongodb://localhost/loginapp');
 var db = mongoose.connection;
 
 var routes = require('./routes/index');
@@ -97,5 +97,8 @@ app.set('port', (3000));
 app.listen(app.get('port'), function () {
   console.log('Server started on port ' + app.get('port'));
 });
+
+console.log("DIRNAME")
+console.log(__dirname)
 
 module.exports;

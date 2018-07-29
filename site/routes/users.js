@@ -10,6 +10,7 @@ var spawn = require("child_process").spawn;
 var PythonShell = require('python-shell');
 var nodemailer = require('nodemailer');
 var config = require('./config');
+var distances = require('./distances');
 
 router.use(fileUpload());
 
@@ -60,6 +61,7 @@ function startupCompute() {
 	updateDistanceMatrix();
 	console.log("DISTANCE MATRIX");
 	console.log(DISTANCE_MATRIX);
+        globalLog('STARTUP', 'computed distance matrix');
     });
 }
 
@@ -77,6 +79,8 @@ function calculateDistance(d1, d2) {
 /* recommend :: UserInfo -> [Designs]
    relies on global variable DISTANCE_MATRIX and N_RECOMMS */
 function recommend(user) {
+    console.log("DISTANCE MATRIX:");
+    console.log(DISTANCE_MATRIX);
     let n_submits = user.files.length;
 
     if (n_submits == 0) {
@@ -133,6 +137,63 @@ function* conditionGenerator(conditions) {
 }
 
 let getCondition = conditionGenerator(['nearest', 'farthest']);
+
+
+/** Logging **/
+                                /* userLog: handle logging at the user level */
+function userLog(action, info, name) {
+        let timeStamp = getDate();
+        // let name = user.username;
+        console.log("action: ", action);
+        console.log("info: ", info);
+        console.log("name: ", name);
+        let filePath = path.join(__dirname, '../files', name, 'activity.log'); 
+        console.log("log filepath: ", filePath);
+        let data = '\n' + timeStamp + ' : ' + action + ' - ' + info;
+        fs.open(filePath, 'a', (err, fd) => {
+                if (err) recordErr('LOG_ERROR ' + name, err);
+                fs.appendFile(fd, data, (err) => {
+                        if (err) recordErr('LOG_ERROR ' + name, err);
+                        fs.close(fd, (err) => {
+                                if (err) recordErr('LOG_ERROR ' + name, err);
+                        });
+                });
+        });
+        return;
+}
+
+                                /* recordErr: log error information to a errors.log file */
+function recordErr(msg, err) {
+        let timeStamp = getDate();
+        let filePath = path.join(__dirname, 'errors.log');
+        let data = msg + '\n\t' + err + '\n'
+        fs.open(filePath, 'a', (err, fd) => {
+                if (err) return;                        /* !!! */
+                fs.appendFile(fd, data, (err) => {
+                        if (err) return;                /* !!! */
+                        fs.close(fd, (err) => {
+                                if (err) return;        /* !!! */
+                        });
+                });
+        });
+        return;
+}
+                                /* globalLog: handle logging at the global level */
+function globalLog(action, info) {
+        let timeStamp = getDate();
+        let filePath = path.join(__dirname, '../', 'global.log');
+        let data = timeStamp + ' : ' + action + ' - ' + info + '\n';
+        fs.open(filePath, 'a', (err, fd) => {
+                if (err) recordErr('GLOBAL_LOG_ERROR ', err);
+                fs.appendFile(fd, data, (err) => {
+                        if (err) recordErr('GLOBAL_LOG_ERROR ', err);
+                        fs.close(fd, (err) => {
+                                if (err) recordErr('GLOBAL_LOG_ERROR ', err);
+                        });
+                });
+        });
+        return;
+}
 
 router.get('/upload', function (req, res) {
     res.render('upload');
@@ -246,8 +307,7 @@ passport.deserializeUser(function (id, done) {
     });
 });
 
-
-/* Rewrite Function */
+/* TODO Rewrite Function */
 router.post('/upload', function (req, res) {
     if (!req.files.sampleFile) {
 	req.flash('error_msg', 'Please choose a file');
@@ -331,6 +391,7 @@ router.post('/upload', function (req, res) {
 
 	    fobj = {
 		'desription': t,
+                'original_path': '/' + req.user.username + '/' + sampleFile.name,
 		'path': d,
 		'type': option,
 		'urls': urls,
@@ -339,6 +400,7 @@ router.post('/upload', function (req, res) {
 		'avg_face_area': avg_face_area,
 		'nfaces': nfaces
 	    };
+            console.log(fobj);
 
 	    DESIGNS.push({'user': req.user.username, 'design': fobj});
 
@@ -346,8 +408,8 @@ router.post('/upload', function (req, res) {
 	    // console.log(DESIGNS);
 
 	    updateDistanceMatrix();
-	    console.log("DISTANCE MATRIX");
-	    console.log(DISTANCE_MATRIX);
+	    // console.log("DISTANCE MATRIX");
+	    // console.log(DISTANCE_MATRIX);
 
 	    User.findOne({ 'username': req.user.username }, function(err, user) {
 		if (option != 'Remixed') {
@@ -376,6 +438,7 @@ router.post('/upload', function (req, res) {
 	    if (option == 'Remixed') {
 		user.files.push({
 		    'description': t,
+                    'original_path': '/' + req.user.username + '/' + sampleFile.name,
 		    'path': d,
 		    'type': option,
 		    'urls': urls,
@@ -388,6 +451,7 @@ router.post('/upload', function (req, res) {
 	    } else {
 		user.files.push({
 		    'description': t,
+                    'original_path': '/' + req.user.username + '/' + sampleFile.name,
 		    'path': d,
 		    'type': option,
 		    'score': info,
@@ -403,10 +467,11 @@ router.post('/upload', function (req, res) {
 	});
     }
 
-    let datetime = getDate();
+    /* let datetime = getDate();
     let data = '\nU0 ' + datetime + ' ' + sampleFile.name + option + urls;
     let pth = path.join(__dirname, '../files', req.user.username, req.user.username + '_log.txt');
-    log(data, pth);
+    log(data, pth); */
+    userLog('FILE_UPLOAD', sampleFile.name + ' ' + option + ' ' + urls, req.user);
     req.flash('success_msg', "File uploaded successfully!");
     console.log("File uploaded successfully");
     res.render('upload', {
@@ -414,6 +479,118 @@ router.post('/upload', function (req, res) {
 	filename: xmas,
 	progress: 'true'
     });
+});
+
+                                /* return true if file is not a valid STEP file */
+function valid(input) {
+        /* TODO perform additional checks on the file */
+        return input.name.match(/.step|.stp/i);
+}
+
+router.get('/newupload', (req, res) => {
+        res.render('newupload');
+});
+
+router.post('/newupload', (req, res) => {
+        console.log(req.files.inputFile);
+                                                /* check whether a file was chosen */
+        if (!req.files.inputFile) {
+                req.flash('err_msg', 'Please choose a file');
+                res.redirect('/users/newupload');
+                return;
+        }
+
+        let input = req.files.inputFile;
+        let userName = req.user.username;
+        console.log("userName: ", userName);
+                                                /* check whether the file is valid */
+        if (!valid(input)) {
+                req.flash('err_msg', 'Please choose a STEP file');
+                res.redirect('/users/newupload');
+                return;
+        }
+
+        let designName = input.name.replace(/.step|.stp/i,'');
+
+                                                /* transfer the file to location on the server */
+        let fileDir = path.join(__dirname, '../files', req.user.username);
+        let filePath = path.join(fileDir, input.name);
+        input.mv(filePath, (err) => {
+                if (err) recordErr('FILE_MV', err);
+        });
+
+        console.log("filedir ", fileDir);
+        console.log("filepath ", filePath);
+
+                                                /* convert file to STL - required for rendering */
+        let convert_options = {
+                mode: 'text',
+                pythonPath: '/usr/bin/python2',
+                pythonOptions: ['-u'],
+                scriptPath: config.scriptsPath,
+                args: [filePath, fileDir + '/']
+        };
+
+        PythonShell.run('convert_to_stl.py', convert_options, (err, results) => {
+                if (err) recordErr('FILE_CONVERT', err);
+                console.log('convert_to_stl.py -- results: %j', results);
+                /* at this point we should have an STL file in the server
+                   ready to render */
+        });
+        
+                                                /* compute "coordinates" of a design using the
+                                                   python script `distance.py` */
+        let distance_options = {
+                mode: 'text',
+                pythonPath: '/usr/bin/python2',
+                pythonOptions: ['-u'],
+                scriptPath: config.scriptsPath,
+                args: [filePath]
+        };
+
+        PythonShell.run('distance.py', distance_options, (err, results) => {
+                if (err) recordErr('DISTANCE_COMPUTE', err);
+                console.log('distance.py -- results: %j', results);
+                                                /* There should be a better way to extract the
+                                                   information */
+                let reslen = results.length;
+                let volume = Number(results[reslen-3]);
+                let avg_face_area = Number(results[reslen-2]);
+                let nfaces = Number(results[reslen-1]);
+
+                designObj = {
+                        'description': req.body.text,
+                        'name': designName,
+                        'original_path': '/' + req.user.username + '/' + input.name,
+                        'path': '/' + req.user.username + '/' + designName + '.stl',
+                        'type': req.body.type,
+                        'urls': req.body.urls,
+                        'volume': volume,
+                        'avg_face_area': avg_face_area,
+                        'nfaces': nfaces
+                };
+                console.log(designObj);
+
+                                                /* update global DESIGNS array and update distance
+                                                   matrix */
+                DESIGNS.push({'user': req.user.username, 'design': designObj});
+                updateDistanceMatrix();
+
+                                                /* push information to MongoDB database */
+                User.findOne({ 'username': req.user.username }, (err, user) => {
+                        user.files.push(designObj);
+                        console.log("USER FILES:")
+                        console.log(user.files);
+                        user.save((err) => {
+                                if (err) recordErr('DB_SAVE_ERR', err);
+                        });
+                });
+        });
+
+        console.log("calling userLog with : ", userName);
+        userLog('FILE_UPLOAD', input.name + ' ' + req.body.type + ' ' + req.body.urls, userName);
+        req.flash('success_msg', 'File uploaded successfully. Please wait a moment for it to reflect on your homepage.');
+        res.redirect('/users/homepage');
 });
 
 function getDate(){
@@ -586,6 +763,26 @@ router.get('/userinfo', function(req, res) {
 	condition: user.condition,
 	nfiles: user.files.length
     });
+});
+
+router.get('/download/:userId/:designName', (req, res) => {
+        let currUser = req.user.username;
+        let reqFilePath = '/' + req.params.userId + '/' + req.params.designName;
+        console.log(reqFilePath);
+        let filePath = undefined;
+        User.findOne({ 'username': currUser }, (err, user) => {
+                if (err) recordErr('DOWNLOAD_ERROR', err);
+                for (let i = 0; i < user.files.length; i++) {
+                        if (user.files[i].path == reqFilePath) {
+                                filePath = user.files[i]['original_path'];
+                        }
+                }
+                if (filePath !== undefined)
+                        filePath = path.join(__dirname, '../files', filePath);
+                console.log("FILEPATH FOR DOWNLOAD");
+                console.log(path.join(filePath));
+                res.download(filePath);
+        });
 });
 
 router.get('/delete/:userId/:designName', function (req, res) {

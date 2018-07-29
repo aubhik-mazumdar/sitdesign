@@ -1,9 +1,14 @@
-<div class='container'>
-    <h3 id='heading' class='text-center'>{{{title}}}</h3>
-</div>
-<br>
-<br>
 <h3 id='fileName'>{{{fileName}}}</h3>
+<table id='title' class='table' border='0' sytle="width: 100%">
+  <tr>
+    <td style='text-align:center'><h3 id='fileName'>{{{fileName}}}</h3></td>
+    <td style='text-align:right'>
+      <form action="/users/download/{{{uname}}}/{{{dname}}}">
+        <button class="btn btn-primary type="submit">Download</button>
+      </form>
+    </td>
+  </tr>
+</table>
 <div class='container'>
     <table id='info' class='table table-dark table-bordered' style="table-layout: fixed; width: 100%">
         <tr>
@@ -55,6 +60,26 @@
             <button id='analyze' value='Analyze my design' class='btn-primary btn-lg' onclick='analyze()'>ANALYZE</button>
         </a>
     </div> --}}
+
+    <code><div id='time' align='center'>
+    </div></code>
+
+    <table style="border:1px solid black; width:100%; padding=15px; table-layout:fixed">
+      <thead>
+        <tr>
+          <th align="center" colspan="2">Tracking time</th>
+        </tr>
+      </thead>
+      <tr>
+        <td>Raw Interaction Time</td>
+        <td id='t1'>0 ms</td>
+      </tr>
+      <tr>
+        <td>Effective Interaction Time</td>
+        <td id='t2'>0 ms</td>
+      </tr>
+    </table>
+
     <div id='mainFrame' align='center'>
     </div>
 </div>
@@ -63,6 +88,9 @@
 <script type="text/javascript" src="/jsc3d.console.js"></script>
 <script type="text/javascript" src="/external/Sonic/sonic.js"></script>
 <script type="text/javascript">
+    var backGroundColor1 = "#FFFFFF";
+    var backGroundColor2 = "#FFFFFF";
+    var modelColor = "#CAA618";
     window.onload = function () {
         let x = document.getElementById('fileName');
         let tempPath = x.innerHTML;
@@ -79,15 +107,68 @@
         viewer.setParameter('InitRotationX', 20);
         viewer.setParameter('InitRotationY', 20);
         viewer.setParameter('InitRotationZ', 0);
-        viewer.setParameter('ModelColor', '#CAA618');
-        viewer.setParameter('BackgroundColor1', '#000000');
-        viewer.setParameter('BackgroundColor2', '#6A6AD4');
+        viewer.setParameter('ModelColor', modelColor);
+        viewer.setParameter('BackgroundColor1', backGroundColor1);
+        viewer.setParameter('BackgroundColor2', backGroundColor2);
         viewer.setParameter('RenderMode', 'flat');
         viewer.setParameter('Renderer', 'webgl');
         //viewer.setParameter('SphereMapUrl', 'chrome.jpg');
         viewer.setParameter('ProgressBar', 'off');
         viewer.init();
         viewer.update();
+
+        var Stopwatch = function(elem) {
+            var offset, interval;
+            var clock = 0;
+            var start = () => {
+                if (!interval) {
+                    offset = Date.now();
+                    interval = setInterval(update, 10); /* update every 10 milliseconds */
+                }
+            }
+            var stop = () => {
+                if (interval) {
+                    clearInterval(interval);
+                    interval = null;
+                }
+            }
+            var update = () => {
+                clock += delta();
+                elem.innerHTML = clock/1000 + " s";
+            }
+            var delta = () => {
+                var now = Date.now();
+                var d = now - offset;
+                offset = now;
+                return d;
+            }
+            this.start = start;
+            this.stop = stop;
+            this.tick = clock;
+        }
+
+        let rawTimer = new Stopwatch(document.getElementById('t1'));
+        let interactionTimer = new Stopwatch(document.getElementById('t2'));
+        
+        div.addEventListener("mouseover", (e) => {
+            console.log("over");
+            rawTimer.start();
+        });
+
+        div.addEventListener("mouseout", (e) => {
+            console.log("out");
+            rawTimer.stop();
+        });
+
+        div.addEventListener("pointerdown", (e) => {
+            console.log("pointer down");
+            interactionTimer.start();
+        });
+
+        div.addEventListener("pointerup", (e) => {
+            console.log("pointer up");
+            interactionTimer.stop();
+        });
     }
 
     function analyze() {

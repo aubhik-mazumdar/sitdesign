@@ -1,1 +1,0 @@
-Mesh-like structure with smooth edges
