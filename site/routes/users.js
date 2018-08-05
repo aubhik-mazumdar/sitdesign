@@ -471,7 +471,7 @@ router.post('/upload', function (req, res) {
     let data = '\nU0 ' + datetime + ' ' + sampleFile.name + option + urls;
     let pth = path.join(__dirname, '../files', req.user.username, req.user.username + '_log.txt');
     log(data, pth); */
-    userLog('FILE_UPLOAD', sampleFile.name + ' ' + option + ' ' + urls, req.user);
+    //userLog('FILE_UPLOAD', sampleFile.name + ' ' + option + ' ' + urls, req.user);
     req.flash('success_msg', "File uploaded successfully!");
     console.log("File uploaded successfully");
     res.render('upload', {
@@ -502,6 +502,7 @@ router.post('/newupload', (req, res) => {
 
         let input = req.files.inputFile;
         let userName = req.user.username;
+        console.log("input: ", input);
         console.log("userName: ", userName);
                                                 /* check whether the file is valid */
         if (!valid(input)) {
@@ -587,8 +588,8 @@ router.post('/newupload', (req, res) => {
                 });
         });
 
-        console.log("calling userLog with : ", userName);
-        userLog('FILE_UPLOAD', input.name + ' ' + req.body.type + ' ' + req.body.urls, userName);
+        //console.log("calling userLog with : ", userName);
+        //userLog('FILE_UPLOAD', input.name + ' ' + req.body.type + ' ' + req.body.urls, userName);
         req.flash('success_msg', 'File uploaded successfully. Please wait a moment for it to reflect on your homepage.');
         res.redirect('/users/homepage');
 });
@@ -770,7 +771,7 @@ router.get('/download/:userId/:designName', (req, res) => {
         let reqFilePath = '/' + req.params.userId + '/' + req.params.designName;
         console.log(reqFilePath);
         let filePath = undefined;
-        User.findOne({ 'username': currUser }, (err, user) => {
+        User.findOne({ 'username': req.params.userId }, (err, user) => {
                 if (err) recordErr('DOWNLOAD_ERROR', err);
                 for (let i = 0; i < user.files.length; i++) {
                         if (user.files[i].path == reqFilePath) {
