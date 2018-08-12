@@ -1,3 +1,4 @@
+var net = require('net');
 var express = require('express');
 var router = express.Router();
 var User = require('../models/user');
@@ -10,9 +11,13 @@ var spawn = require("child_process").spawn;
 var PythonShell = require('python-shell');
 var nodemailer = require('nodemailer');
 var config = require('./config');
-var distances = require('./distances');
+// var distances = require('./distances');
 
 router.use(fileUpload());
+
+let client = new net.Socket();
+let PORT = 8080;
+let HOST = '127.0.0.1';
 
 /* global distance matrix */
 var DISTANCE_MATRIX = new Object();
@@ -65,7 +70,7 @@ function startupCompute() {
     });
 }
 
-startupCompute(); /* !!!!!!!!!!!!!!!!!!! */
+// startupCompute(); /* !!!!!!!!!!!!!!!!!!! */
 
 /* Returns L2 norm. Each design is represented by the tuple
    (log(volume), log(avg_face_area), nfaces) */
@@ -486,6 +491,87 @@ function valid(input) {
         /* TODO perform additional checks on the file */
         return input.name.match(/.step|.stp/i);
 }
+
+router.get('/altupload', (req, res) => {
+    res.render('altupload');
+});
+
+router.post('/altupload', (req, res) => {
+    console.log(req.files.inputFile);
+
+    if (!req.files.inputFile) {
+	req.flash('err_msg', 'Please choose a file');
+	res.redirect('/users/altupload');
+	return;
+    }
+
+    let input = req.files.inputFile;
+    let fileName = input.name;
+    let userName = req.user.username;
+    let fileDir = path.join(__dirname, '..', 'files', userName);
+    let filePath = path.join(fileDir, fileName);
+    console.log('filename: ', fileName);
+    console.log('username: ', userName);
+    console.log('filedir: ', fileDir);
+    console.log('filepath: ', filePath);
+
+    /* Steps:
+     * - Connect to "compute" server
+     * - Move file user uploaded to appropriate directory
+     * - Send "process file" request to "compute" server
+     * - On SUCCESS,
+     *     + Add design to users files
+     *     + Redirect user to homepage
+     * - On FAILURE,
+     *     + Alert user
+     *     + TODO
+     */
+    client.connect(PORT, HOST, () => {
+	console.log('Connected to COMPUTE server');	
+	input.mv(filePath, (err) => {
+	    if (err) throw err; /* !!!!!!!!!!!!!!!!!!!!!!!!! */
+	    let request = {command: 'PROCESS'
+			   , fileName: fileName
+			   , filePath: filePath
+			   , userName: userName
+			   , fileDir: fileDir};
+	    console.log(JSON.stringify(request));
+	    client.write(JSON.stringify(request));
+	});
+    });
+
+    client.on('data', (data) => {
+	let result = JSON.parse(data);
+	console.log('GOT: ', result);
+	if (result.result === 'SUCCESS') {
+            /* push information to MongoDB database */
+            User.findOne({ 'username': userName }, (err, user) => {
+		let designObj = {
+		    description: req.body.text,
+		    name: fileName.replace(/.stp|.step/i, ''),
+		    original_path: path.join('/', userName, fileName), /* e.g. /john/design1.step */
+		    file_dir: fileDir,
+		    path: path.join('/', userName, fileName.replace(/.stp|.step/i,'.stl')),
+		    type: req.body.type,
+		    urls: req.body.urls,
+		    properties: 'TODO'
+		}
+		console.log(designObj);
+                user.files.push(designObj);
+                console.log("USER FILES:")
+                console.log(user.files);
+                user.save((err) => {
+                    if (err) recordErr('DB_SAVE_ERR', err);
+                });
+	    });
+	    res.redirect('/users/homepage');
+	}
+    });
+
+    client.on('close', () => {
+	console.log('Disconnected from server');
+    });
+});
 
 router.get('/newupload', (req, res) => {
         res.render('newupload');

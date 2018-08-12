@@ -52,7 +52,10 @@
 			linker.setAttribute('href', '/users/design' + items[i].innerHTML.toString());
 			linker.id = 'ao' + i.toString();
 			var p = document.createElement('p');
-			p.innerHTML = items[i].innerHTML.toString().replace(/\/\w+?\//g, '');
+                        
+			// p.innerHTML = items[i].innerHTML.toString().replace(/\/\w+?\//g, '');
+                        
+                        p.innerHTML = items[i].innerHTML.toString().replace(/\/\w+?\//g,'').replace(/.stl/i,'');
 			p.align = 'center';
 			p.setAttribute("class", "card-header");
 			dd.setAttribute("class", "card");
