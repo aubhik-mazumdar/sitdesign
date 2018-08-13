@@ -15,7 +15,7 @@ var config = require('./config');
 
 router.use(fileUpload());
 
-let client = new net.Socket();
+// let client = new net.Socket();
 let PORT = 8080;
 let HOST = '127.0.0.1';
 
@@ -250,8 +250,10 @@ router.post('/register', function (req, res) {
 	    //C0 31/3/2018 @ 12:13:43
 	    let datetime = getDate();
 	    let data = 'C0 ' + datetime;
-	    let pth = path.join(__dirname, '../files', name, name + '_log.txt');
-	    let dir = path.join(__dirname, '../files', name);
+	    // let pth = path.join(__dirname, '../files', name, name + '_log.txt');
+	    // let dir = path.join(__dirname, '../files', name);
+	    let pth = path.join(__dirname, '..', 'files', username, name + '_log.txt');
+	    let dir = path.join(__dirname, '..', 'files', username);
 	    fs.mkdirSync(dir);
 	    fs.writeFileSync(pth, data,
 			     function (err) {
@@ -526,10 +528,11 @@ router.post('/altupload', (req, res) => {
      *     + Alert user
      *     + TODO
      */
-    client.connect(PORT, HOST, () => {
-	console.log('Connected to COMPUTE server');	
+
+    const client = net.createConnection({port: PORT, host: HOST}, () => {
+	console.log('connected to COMPUTE server');
 	input.mv(filePath, (err) => {
-	    if (err) throw err; /* !!!!!!!!!!!!!!!!!!!!!!!!! */
+	    if (err) throw err; /* !!!!!!!!!!!!!!!!!!!!!!! */
 	    let request = {command: 'PROCESS'
 			   , fileName: fileName
 			   , filePath: filePath
@@ -537,8 +540,26 @@ router.post('/altupload', (req, res) => {
 			   , fileDir: fileDir};
 	    console.log(JSON.stringify(request));
 	    client.write(JSON.stringify(request));
+	    req.flash('success_msg', 'File upload successful. Please wait a moment for it to reflect on your homepage.');
+	    res.redirect('/users/homepage');
 	});
     });
+    
+    // client.connect(PORT, HOST, () => {
+    // 	console.log('Connected to COMPUTE server');	
+    // 	input.mv(filePath, (err) => {
+    // 	    if (err) throw err; /* !!!!!!!!!!!!!!!!!!!!!!!!! */
+    // 	    let request = {command: 'PROCESS'
+    // 			   , fileName: fileName
+    // 			   , filePath: filePath
+    // 			   , userName: userName
+    // 			   , fileDir: fileDir};
+    // 	    console.log(JSON.stringify(request));
+    // 	    client.write(JSON.stringify(request)); /* send request to `compute` */
+    // 	    req.flash('success_msg', 'File uploaded successfully. Please wait a moment for it to reflect on your homepage.');	    
+    // 	    res.redirect('/users/homepage');       /* redirect here itself */
+    // 	});
+    // });
 
     client.on('data', (data) => {
 	let result = JSON.parse(data);
@@ -548,13 +569,14 @@ router.post('/altupload', (req, res) => {
             User.findOne({ 'username': userName }, (err, user) => {
 		let designObj = {
 		    description: req.body.text,
+		    id: result.design_id, /* provided by "compute" */
 		    name: fileName.replace(/.stp|.step/i, ''),
 		    original_path: path.join('/', userName, fileName), /* e.g. /john/design1.step */
 		    file_dir: fileDir,
 		    path: path.join('/', userName, fileName.replace(/.stp|.step/i,'.stl')),
 		    type: req.body.type,
 		    urls: req.body.urls,
-		    properties: 'TODO'
+		    properties: result.properties
 		}
 		console.log(designObj);
                 user.files.push(designObj);
@@ -564,8 +586,10 @@ router.post('/altupload', (req, res) => {
                     if (err) recordErr('DB_SAVE_ERR', err);
                 });
 	    });
-	    res.redirect('/users/homepage');
+	    // res.redirect('/users/homepage');
 	}
+	// client.destroy(); /* end connection -- destroy client */
+	client.end();
     });
 
     client.on('close', () => {
