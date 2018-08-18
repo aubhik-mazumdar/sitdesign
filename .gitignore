@@ -57,3 +57,13 @@ typings/
 # dotenv environment variables file
 .env
 
+# files directory in site
+site/files
+
+# pickled files
+*.pickle
+**/*.pickle
+
+# pyc files
+*.pyc
+**/*.pyc

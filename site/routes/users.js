@@ -216,6 +216,25 @@ router.get('/login', function (req, res) {
     res.render('login');
 });
 
+router.post('/alt-register', (req, res) => {
+    /* TODO!
+     * Check whether the username already exists on the server!
+     */
+    req.checkBody('name', 'Please enter a name').notEmpty();
+    req.checkBody('email', 'Please enter an email address').notEmpty().isEmail();
+    req.checkBody('username', 'Please enter a username').notEmpty();
+    req.checkBody('password', 'Please enter a password').notEmpty();
+    req.checkBody('password2', 'Passwords should match!').equals(req.body.password);
+
+    
+    let userDetails = {name : req.body.name
+		       , email : req.body.email
+		       , username : req.body.username
+		       , password : req.body.password
+		       , password2 : req.body.password2}
+
+});
+
 router.post('/register', function (req, res) {
     var name = req.body.name;
     var email = req.body.email;
@@ -499,6 +518,17 @@ router.get('/altupload', (req, res) => {
 });
 
 router.post('/altupload', (req, res) => {
+    /* Steps:
+     * - Connect to "compute" server
+     * - Move file user uploaded to appropriate directory
+     * - Send "process file" request to "compute" server
+     * - On SUCCESS,
+     *     + Add design to users files
+     *     + Redirect user to homepage
+     * - On FAILURE,
+     *     + Alert user
+     *     + TODO
+     */
     console.log(req.files.inputFile);
 
     if (!req.files.inputFile) {
@@ -517,23 +547,11 @@ router.post('/altupload', (req, res) => {
     console.log('filedir: ', fileDir);
     console.log('filepath: ', filePath);
 
-    /* Steps:
-     * - Connect to "compute" server
-     * - Move file user uploaded to appropriate directory
-     * - Send "process file" request to "compute" server
-     * - On SUCCESS,
-     *     + Add design to users files
-     *     + Redirect user to homepage
-     * - On FAILURE,
-     *     + Alert user
-     *     + TODO
-     */
-
     const client = net.createConnection({port: PORT, host: HOST}, () => {
 	console.log('connected to COMPUTE server');
 	input.mv(filePath, (err) => {
 	    if (err) throw err; /* !!!!!!!!!!!!!!!!!!!!!!! */
-	    let request = {command: 'PROCESS'
+	    let request = {command: 'UPLOAD'
 			   , fileName: fileName
 			   , filePath: filePath
 			   , userName: userName
@@ -545,22 +563,6 @@ router.post('/altupload', (req, res) => {
 	});
     });
     
-    // client.connect(PORT, HOST, () => {
-    // 	console.log('Connected to COMPUTE server');	
-    // 	input.mv(filePath, (err) => {
-    // 	    if (err) throw err; /* !!!!!!!!!!!!!!!!!!!!!!!!! */
-    // 	    let request = {command: 'PROCESS'
-    // 			   , fileName: fileName
-    // 			   , filePath: filePath
-    // 			   , userName: userName
-    // 			   , fileDir: fileDir};
-    // 	    console.log(JSON.stringify(request));
-    // 	    client.write(JSON.stringify(request)); /* send request to `compute` */
-    // 	    req.flash('success_msg', 'File uploaded successfully. Please wait a moment for it to reflect on your homepage.');	    
-    // 	    res.redirect('/users/homepage');       /* redirect here itself */
-    // 	});
-    // });
-
     client.on('data', (data) => {
 	let result = JSON.parse(data);
 	console.log('GOT: ', result);
@@ -569,7 +571,7 @@ router.post('/altupload', (req, res) => {
             User.findOne({ 'username': userName }, (err, user) => {
 		let designObj = {
 		    description: req.body.text,
-		    id: result.design_id, /* provided by "compute" */
+		    /* id: result.design_id, */
 		    name: fileName.replace(/.stp|.step/i, ''),
 		    original_path: path.join('/', userName, fileName), /* e.g. /john/design1.step */
 		    file_dir: fileDir,
@@ -586,10 +588,8 @@ router.post('/altupload', (req, res) => {
                     if (err) recordErr('DB_SAVE_ERR', err);
                 });
 	    });
-	    // res.redirect('/users/homepage');
 	}
-	// client.destroy(); /* end connection -- destroy client */
-	client.end();
+	client.end(); /* end connection */
     });
 
     client.on('close', () => {
@@ -777,7 +777,41 @@ router.get('/homepage', function (req, res) {
     });
 });
 
+
 router.get('/recommendations', (req, res) => {
+    User.getUserByUsername(req.user.username, (err, user) => {
+
+	const client = net.createConnection({port: PORT, host: HOST}, () => {
+	    console.log('connected to COMPUTE server');
+
+	    let request = {command: 'RECOMMEND'
+			   , userName: user.username
+			   , condition: user.condition}
+	    
+	    console.log(JSON.stringify(request)); // DEBUG
+	    client.write(JSON.stringify(request));
+	    // client.write('CLOSE');
+	    // req.flash('success_msg', 'Generating recommendations');
+	});
+
+	client.on('data', (data) => {
+	    let result = JSON.parse(data);
+	    res.render('recommendations', {
+		org: result.recommendations /* org stands for original btw, and is
+					     * used here since the layout for 'recommendations'
+					     * was copied from the layout for 'homepage' */
+	    });
+	    client.end();
+	});
+
+	client.on('close', () => {
+	    console.log('Disconnected from the server.');
+	    /* Make sure to log all this information */
+	});
+    });
+});
+
+router.get('/old-recommendations', (req, res) => {
     User.getUserByUsername(req.user.username, (err, user) => {
 	let recomms = recommend(user);
 

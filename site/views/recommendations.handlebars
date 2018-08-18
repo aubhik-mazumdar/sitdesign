@@ -1,12 +1,3 @@
-<h2 style='text-align:center'>Last Submitted Design</h2>
-<br>
-<div class='container'>
-  <code id='prevName'>{{{prevName}}}</code>
-  <div id='previous' align='center'>
-  </div>
-  <br>
-  <br>
-</div>
 <h2>Recommendations</h2>
 <div class='container'>
 	<div id='original' class='row'>
@@ -30,27 +21,27 @@
                 let background2 = '#ffffff';
                 
                 // Render users previous design
-                let px = document.getElementById('prevName');
-                let prevPath = px.innerHTML;
-                let xu = document.getElementById('previous');
-                let du = document.createElement('canvas');
-                du.setAttribute('width', '300%');
-                du.setAttribute('height', '300%');
-                du.setAttribute('class', 'img-fluid');
-                xu.appendChild(du);;
-                var prev_viewer = new JSC3D.Viewer(du);
-                prev_viewer.setParameter('SceneUrl', prevPath);
-                prev_viewer.setParameter('InitRotationX', 20);
-                prev_viewer.setParameter('InitRotationY', 20);
-                prev_viewer.setParameter('InitRotationZ', 0);
-                prev_viewer.setParameter('ModelColor', model_color);
-                prev_viewer.setParameter('BackgroundColor1', background1);
-                prev_viewer.setParameter('BackgroundColor2', background2);
-                prev_viewer.setParameter('RenderMode', 'flat');
-                prev_viewer.setParameter('Renderer', 'webgl');
-                prev_viewer.setParameter('ProgressBar', 'off');
-                prev_viewer.init();
-                prev_viewer.update();
+                // let px = document.getElementById('prevName');
+                // let prevPath = px.innerHTML;
+                // let xu = document.getElementById('previous');
+                // let du = document.createElement('canvas');
+                // du.setAttribute('width', '300%');
+                // du.setAttribute('height', '300%');
+                // du.setAttribute('class', 'img-fluid');
+                // xu.appendChild(du);
+                // var prev_viewer = new JSC3D.Viewer(du);
+                // prev_viewer.setParameter('SceneUrl', prevPath);
+                // prev_viewer.setParameter('InitRotationX', 20);
+                // prev_viewer.setParameter('InitRotationY', 20);
+                // prev_viewer.setParameter('InitRotationZ', 0);
+                // prev_viewer.setParameter('ModelColor', model_color);
+                // prev_viewer.setParameter('BackgroundColor1', background1);
+                // prev_viewer.setParameter('BackgroundColor2', background2);
+                // prev_viewer.setParameter('RenderMode', 'flat');
+                // prev_viewer.setParameter('Renderer', 'webgl');
+                // prev_viewer.setParameter('ProgressBar', 'off');
+                // prev_viewer.init();
+                // prev_viewer.update();
 
                 // --- Aubhik ---
 		let z = document.getElementById('original');

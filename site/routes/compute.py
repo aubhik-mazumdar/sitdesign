@@ -1,7 +1,9 @@
 import json
-import os
 import ntpath
 import numpy as np
+import operator
+import os
+import pickle
 import socket
 import sys
 import time
@@ -25,9 +27,10 @@ class Design(object):
             self.__class__.count += 1
             
         self.infile = infile
+        self.design_id = self.__class__.count
         self.user = user
         self.name = os.path.splitext(ntpath.basename(infile))[0]
-        self.full_name = self.user + ':' + self.name
+        self.full_name = (self.user, self.name)
         self.doc = FreeCAD.newDocument(self.name)
         self.shape = self._create_shape()
 
@@ -90,6 +93,20 @@ class DesignDomain(object):
         self.compute_matrix()
         return
 
+    def get_last_design(self, user):
+        user_designs = filter(lambda x: x.full_name[0] == user, self.designs.values())
+        last_design = max(user_designs, key=lambda x: x.design_id)
+        print 'User: ' + str(user) + ' Last Design: ' + str(last_design.name)
+        return last_design
+
+    def remove_design(self, name):
+        print("FUNCTION NOT FULLY IMPLEMENTED")
+        del self.designs[name]
+
+    @property
+    def users(self):
+        return map(lambda x: x[0], self.designs.keys())
+
     @property
     def names(self):
         return list(self.designs.keys())
@@ -123,6 +140,18 @@ class DesignDomain(object):
         self.dmat = M
         return M
 
+    def nearest(self, obj, n=5):
+        dists = self.dmat[obj]
+        revr = self.measure == 'cosine'
+        s = sorted(dist.items(), key=operator.itemgetter(1), reverse=revr)
+        return s[:n]
+
+    def farthest(self, obj, n=5):
+        dists = self.dmat[obj]
+        revr = self.measure != 'cosine'
+        s = sorted(dists.items(), key=operator.itemgetter(1), reverse=revr)
+        return s[:n]
+
     def _distance(self, v1, v2, method='l2'):
         if method == 'l2':
             v1 = self._coordinates(v1)
@@ -151,8 +180,20 @@ class DesignDomain(object):
     def __getitem__(self, item):
         return self.designs[item]
 
+def design_domain(filename='design-domain.pickle'):
+    if os.path.exists(filename):
+        with open(filename, 'rb') as f:
+            return pickle.load(f)
+    return DesignDomain()
 
-Dom = DesignDomain()
+def cache_design_domain(dom, filename='design-domain.pickle'):
+    with open(filename, 'wb') as f:
+        pickle.dump(dom, f) # only pickle the distance matrix
+    return
+
+Dom = design_domain()
+print('Initial Distance Matrix: ')
+print(Dom.dmat)
 
 # --- Socket Server ---
 
@@ -177,22 +218,35 @@ while True:
     request = json.loads(data)
     print 'SERVER: received: ' + str(request)
     command = request['command']
-    if command == u'PROCESS':
+
+    if command == u'PROCESS': # might not actually need this check
         print(request)
         des = Design(request['userName'], request['filePath'])
+        print("'Full' name of uploaded design")
+        print(des.full_name)
         Dom.add_design(des)
         print('Total designs so far: ',  str(des.count))
         print('Converting to STL')
+
+        # build result object to send to client.
         result = des.to_stl(request['fileDir'])
-        print(result)
         result['properties'] = des.coordinates
-        result['design_id'] = des.count
+        result['design_id'] = des.design_id
+
+        print(result)
         print('Distance Matrix: ')
         print(Dom.dmat)
+
         # time.sleep(20) # delay for 20 seconds -- testing responsiveness of website
         conn.sendall(json.dumps(result))
+
+    elif command == u'RECOMMEND':
+        print(request)
         
-# conn.close()
+
+cache_design_domain(Dom)        
+
+conn.close()
 
 # Serialize objects
 # - Distance Matrix
