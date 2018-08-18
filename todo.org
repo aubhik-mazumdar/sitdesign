@@ -1,0 +1,42 @@
+* Tasks
+
+** TODO Recommendation Function [1/2]                               :python:
+
+- [X] Don't show own designs in recommendations
+- [ ] Log which designs your recommending (POSTPONE)
+
+** TODO Design Deletion                                                 :js:
+
+- [X] Pass message to `compute`
+- [X] Remove design from DesignDomain object
+- [ ] Error Checking
+
+** TODO User Registration [0/3]                                         :js:
+
+- [ ] Check whether the same username exists
+- [ ] Check whether the same email address exists
+
+** TODO Design Upload [0/1]                                             :js:
+
+- [ ] Make sure user hasn't submitted file with same name before
+
+
+** TODO Log file design [0/3]                                    :python:js:
+
+Consider the tasks you have to perform with log files.
+
+For examplee, If you need to look at a sequence of operations 
+during some session then it makes sense to have one global log 
+file since merging information from many will be time consuming.
+
+- [ ] Single?
+- [ ] Per user?
+- [ ] Both?
+
+
+** TODO Design timing function                                          :js:
+
+Time activity spent on each design. Which log file should you store
+this in?
+
+
