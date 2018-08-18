@@ -584,9 +584,11 @@ router.post('/altupload', (req, res) => {
                 user.files.push(designObj);
                 console.log("USER FILES:")
                 console.log(user.files);
+		
                 user.save((err) => {
                     if (err) recordErr('DB_SAVE_ERR', err);
                 });
+		
 	    });
 	}
 	client.end(); /* end connection */
@@ -930,14 +932,71 @@ router.get('/download/:userId/:designName', (req, res) => {
         });
 });
 
-router.get('/delete/:userId/:designName', function (req, res) {
+router.get('/delete/:userId/:designName', (req, res) => {
+    
+    const client = net.createConnection({port: PORT, host: HOST}, () => {
+	console.log('Connected to COMPUTE server');	
+	var currUser = req.user.username;
+	var designPath = '/' + req.params.userId + '/' + req.params.designName;
+	var removed = null;
+	console.log('Delete request: ', designPath);
+
+	User.findOne({
+	    'username': currUser,
+	}, (err, user) => {
+	    // let removed = null;
+	    console.log("user files: ", user.files);
+
+	    for (let i = 0; i < user.files.length; i++) {
+		console.log('Checking : ', user.files[i].path)
+		if (user.files[i].path == designPath) {
+		    removed = user.files.splice(i, 1);
+		}
+	    }
+	    
+	    console.log('removed ', removed);
+	    console.log(user.files);
+
+	    var request = {command: 'DELETE'
+			   , userName: user.username
+			   , designName: removed[0].name
+			   , designPath: removed[0].original_path
+			   , designRenderPath: removed[0].path};
+	    
+	    console.log('Sending request: ')
+	    console.log(request);
+
+	    user.save((err) => {
+		if (err) throw err;
+	    });
+
+	    client.write(JSON.stringify(request));
+	});
+    });
+
+    client.on('data', (data) => {
+	res.redirect('/users/homepage');	
+    });
+
+    client.on('close', () => {
+	console.log('Disconnected from the server.');
+	/* Make sure to log all this information */
+    });	
+
+});
+
+router.get('/old-delete/:userId/:designName', function (req, res) {
     var currUser = req.user.username;
     var tempOrg = [],
 	tempRem = [];
     var path = '/' + req.params.userId + '/' + req.params.designName;
+    console.log('Delete request!');
+    console.log(path);
+
     User.findOne({
 	'username': currUser
     }, function (err, user) {
+
 	for (let i = 0; i < user.files.length; i++) {
 	    if (user.files[i].path == path) {
 		user.files.splice(i, 1);
@@ -951,9 +1010,11 @@ router.get('/delete/:userId/:designName', function (req, res) {
 		tempOrg.push(user.files[i].path);
 	}
 	console.log(tempOrg, tempRem);
+	
 	user.save(function (err) {
 	    if (err) throw err;
 	});
+	
 	res.render('homepage', {
 	    org: tempOrg,
 	    rem: tempRem

@@ -42,10 +42,20 @@ def handle_request(req):
         names = map(lambda x: x[0], recomms)
         paths = map(render_path, names)
         result = {'recommendations': paths}
+        
         return json.dumps(result)
 
     elif command == u'DELETE':
-        print('Handle')
+        print('Received DELETE request')
+        print('Request: ')
+        print(request)
+
+        Dom.remove_design(request['userName'], request['designName'])
+        
+        result = {'delete': 'SUCCESS'} # error handling required
+        
+        return json.dumps(result)
+
     else:
         print('Handle')
 

@@ -57,7 +57,8 @@ class DesignDomain(object):
         dists = self.dmat[last_design]
         revr = condition == 'farthest'
         s = sorted(dists.items(), key=operator.itemgetter(1), reverse=revr)
-        return s[:n]
+        recomms = filter(lambda x: x[0] != user, s)
+        return recomms[:n]
         
     def compute_matrix(self):
         M = {}
