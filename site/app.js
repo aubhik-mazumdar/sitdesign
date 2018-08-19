@@ -58,20 +58,32 @@ app.use(passport.session());
 
 // Express Validator
 app.use(expressValidator({
-  errorFormatter: function (param, msg, value) {
-    var namespace = param.split('.'),
-      root = namespace.shift(),
-      formParam = root;
-
-    while (namespace.length) {
-      formParam += '[' + namespace.shift() + ']';
+    errorFormatter: function (param, msg, value) {
+	var namespace = param.split('.'),
+	    root = namespace.shift(),
+	    formParam = root;
+	while (namespace.length) {
+	    formParam += '[' + namespace.shift() + ']';
+	}
+	return {
+	    param: formParam,
+	    msg: msg,
+	    value: value
+	};
     }
-    return {
-      param: formParam,
-      msg: msg,
-      value: value
-    };
-  }
+}));
+
+// Custom Validators
+app.use(expressValidator({
+    customValidators: {
+	isSTEP: function (value, filename) {
+	    let extension = (path.extname(filename)).toLowerCase();
+	    if (!extension.match(/.stp|.step/)) {
+		return false;
+	    }
+	    return true;
+	}
+    }
 }));
 
 // Connect Flash

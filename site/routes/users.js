@@ -530,12 +530,17 @@ router.post('/altupload', (req, res) => {
      *     + TODO
      */
     console.log(req.files.inputFile);
+    let fileUploaded = typeof req.files['inputFile'] !== "undefined" ? req.files['inputFile'].name : '';
+    
+    req.checkBody('inputFile', 'Please upload a valid STEP file').isSTEP(fileUploaded);
+    req.checkBody('text', 'Please enter a description').notEmpty();
+    let errors = req.validationErrors();
 
-    if (!req.files.inputFile) {
-	req.flash('err_msg', 'Please choose a file');
-	res.redirect('/users/altupload');
-	return;
-    }
+    // if (!req.files.inputFile || !req.body.text) {
+    // 	req.flash('err_msg', 'Please fill everything in this form');
+    // 	// res.redirect('/users/altupload');
+    // 	return;
+    // }
 
     let input = req.files.inputFile;
     let fileName = input.name;
@@ -549,18 +554,38 @@ router.post('/altupload', (req, res) => {
 
     const client = net.createConnection({port: PORT, host: HOST}, () => {
 	console.log('connected to COMPUTE server');
-	input.mv(filePath, (err) => {
-	    if (err) throw err; /* !!!!!!!!!!!!!!!!!!!!!!! */
-	    let request = {command: 'UPLOAD'
-			   , fileName: fileName
-			   , filePath: filePath
-			   , userName: userName
-			   , fileDir: fileDir};
-	    console.log(JSON.stringify(request));
-	    client.write(JSON.stringify(request));
-	    req.flash('success_msg', 'File upload successful. Please wait a moment for it to reflect on your homepage.');
-	    res.redirect('/users/homepage');
-	});
+
+	if (errors) {
+	    console.log('Description has not been filled');
+	    res.render('altupload', { errors });
+	} else {
+	    input.mv(filePath, (err) => {
+		if (err) throw err; /* !!!!!!!!!!!!!!!!!! */
+
+		let request = {command: 'UPLOAD'
+			       , fileName
+			       , filePath
+			       , userName
+			       , fileDir};
+		console.log(JSON.stringify(request));
+		client.write(JSON.stringify(request));
+		req.flash('success_msg', 'File upload successful. Please wait a moment for it to reflect on your homepage.');
+		res.redirect('/users/homepage');
+	    });
+	}
+
+	// input.mv(filePath, (err) => {
+	//     if (err) throw err; /* !!!!!!!!!!!!!!!!!!!!!!! */
+	//     let request = {command: 'UPLOAD'
+	// 		   , fileName: fileName
+	// 		   , filePath: filePath
+	// 		   , userName: userName
+	// 		   , fileDir: fileDir};
+	//     console.log(JSON.stringify(request));
+	//     client.write(JSON.stringify(request));
+	//     req.flash('success_msg', 'File upload successful. Please wait a moment for it to reflect on your homepage.');
+	//     res.redirect('/users/homepage');
+	// });
     });
     
     client.on('data', (data) => {
@@ -571,7 +596,7 @@ router.post('/altupload', (req, res) => {
             User.findOne({ 'username': userName }, (err, user) => {
 		let designObj = {
 		    description: req.body.text,
-		    /* id: result.design_id, */
+		    original_name: fileName,
 		    name: fileName.replace(/.stp|.step/i, ''),
 		    original_path: path.join('/', userName, fileName), /* e.g. /john/design1.step */
 		    file_dir: fileDir,
@@ -596,6 +621,7 @@ router.post('/altupload', (req, res) => {
 
     client.on('close', () => {
 	console.log('Disconnected from server');
+	client.end(); /* REQUIRED? !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
     });
 });
 
