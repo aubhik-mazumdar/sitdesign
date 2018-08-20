@@ -1,0 +1,58 @@
+			       LOGGING
+			       -------
+
+It is important  that we extract detailed logs  regarding the behavior
+of the user and that of our  website.  I propose we store two types of
+log files on our system:
+
+1. A global log file that captures information regarding the behaviour
+   of the website.
+  
+2. A local log file for  each user that captures information regarding
+   the behavior of the user.
+
+It is important to plan, well before writing the implementation, which
+type of  activity gets logged  in which  file.  Let's think  about the
+kind  of information  we'd want  to extract  after the  competition is
+over.
+
+
+User Activity
+-------------
+
+We would like to know,
+
+1. Sequence of  pages user visits in each session,  where a session is
+   defined as the time between a log in and a log out.
+   
+2. Interaction with designs, along with information regarding the time
+   spent browsing each visible design.
+   
+3. Number of file uploads, downloads, and deletions.
+
+
+It might  not be best  to store all of  this information in  the "user
+local" log file.
+
+For instance,  questions we  ask about the  remix graph  might involve
+calculating the sequence of upload  requests to the website along with
+timing information.
+
+If we stored upload information in  each user's log file, we'd have to
+traverse through  all the user's log  files and then merge  the timing
+information.  However, if we stored  the information in one global log
+file,  we'd simply  have  to go  through  the file  once  to get  this
+information.
+
+
+Global Activity
+---------------
+
+We would like to know,
+
+1. Registration of new users.
+
+2. Messages sent between the JavaScript client and Python server.
+
+3. State of the Remix Graph.
+
