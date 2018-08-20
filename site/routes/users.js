@@ -1,130 +1,55 @@
-var net = require('net');
-var express = require('express');
-var router = express.Router();
-var User = require('../models/user');
-var passport = require('passport');
+var config	  = require('./config');
+var express	  = require('express');
+var fileUpload	  = require('express-fileupload');
+var fs		  = require('fs');
 var LocalStrategy = require('passport-local').Strategy;
-var fileUpload = require('express-fileupload');
-var path = require('path');
-var fs = require('fs');
-var spawn = require("child_process").spawn;
-var PythonShell = require('python-shell');
-var nodemailer = require('nodemailer');
-var config = require('./config');
-// var distances = require('./distances');
+var net		  = require('net');
+var nodemailer    = require('nodemailer');
+var passport	  = require('passport');
+var path	  = require('path');
+var router	  = express.Router();
+var User	  = require('../models/user');
+
 
 router.use(fileUpload());
 
-// let client = new net.Socket();
+/*** Passport stuff ***/
+passport.use(new LocalStrategy(
+    function (username, password, done) {
+	User.getUserByUsername(username, function (err, user) {
+	    if (err) throw err;
+	    if (!user) {
+		return done(null, false, {
+		    message: 'Unknown User'
+		});
+	    }
+
+	    User.comparePassword(password, user.password, function (err, isMatch) {
+		if (err) throw err;
+		if (isMatch) {
+		    return done(null, user);
+		} else {
+		    return done(null, false, {
+			message: 'Invalid password'
+		    });
+		}
+	    });
+	});
+    }));
+
+passport.serializeUser(function (user, done) {
+    done(null, user.id);
+});
+
+passport.deserializeUser(function (id, done) {
+    User.getUserById(id, function (err, user) {
+	done(err, user);
+    });
+});
+
+
 let PORT = 8080;
 let HOST = '127.0.0.1';
-
-/* global distance matrix */
-var DISTANCE_MATRIX = new Object();
-
-/* global list of all designs */
-var DESIGNS = new Array();
-
-/* global number of designs to recommend */
-var N_RECOMMS = 3;
-
-/* updateDistanceMatrix: To be run everytime a new design is uploaded
-   relies on the global variable DESIGNS. Updates global variable
-   DISTANCE_MATRIX */
-function updateDistanceMatrix() {
-    let parameters = ['volume', 'avg_face_area', 'nfaces']; /* Read from a config file later on */
-
-    /* Iterate through the list of all DESIGNS */
-    for (let i of DESIGNS) {
-	let ip = stripPath(i.design.path);
-	DISTANCE_MATRIX[ip] = {};
-	for (let j of DESIGNS) {
-	    let jp = stripPath(j.design.path);
-	    if (ip == jp) /* Distance between same designs is 0 */
-		continue;
-	    let dist = calculateDistance(i.design, j.design);
-	    DISTANCE_MATRIX[ip][jp] = dist;
-	}
-    }
-    return;
-}
-
-/* startupCompute: Perform computations that are currently necessary
-   at startup. This includes computing the distance matrix and updating
-   the list of all designs.
-   ! This is a temporary function and should be removed at a later stage */
-function startupCompute() {
-    User.find({}, (err, users) => {
-	console.log(users);
-	// DESIGNS = new Array();
-	for (let user of users) {
-	    console.log(user);
-	    for (let design of user.files) {
-		DESIGNS.push({'user': user.username, 'design': design});		
-	    }
-	}
-	updateDistanceMatrix();
-	console.log("DISTANCE MATRIX");
-	console.log(DISTANCE_MATRIX);
-        globalLog('STARTUP', 'computed distance matrix');
-    });
-}
-
-// startupCompute(); /* !!!!!!!!!!!!!!!!!!! */
-
-/* Returns L2 norm. Each design is represented by the tuple
-   (log(volume), log(avg_face_area), nfaces) */
-function calculateDistance(d1, d2) {
-    let v = (d1.volume - d2.volume)**2;
-    let f = (d1.nfaces - d2.nfaces)**2;
-    let a = (d1.avg_face_area - d2.avg_face_area)**2;
-    return Math.sqrt(v + f + a);
-}
-
-/* recommend :: UserInfo -> [Designs]
-   relies on global variable DISTANCE_MATRIX and N_RECOMMS */
-function recommend(user) {
-    console.log("DISTANCE MATRIX:");
-    console.log(DISTANCE_MATRIX);
-    let n_submits = user.files.length;
-
-    if (n_submits == 0) {
-	console.log("RECOMMEDING");
-	let r = DESIGNS.slice().sort(() => .5 - Math.random()).slice(0, N_RECOMMS);
-	console.log(r);
-	return r.map((e) => e.design.path);
-    }
-    
-    let prev_submit = user.files[n_submits-1]; /* prev_submit :: Design */
-    let prev = stripPath(prev_submit.path);
-
-    console.log("RECOMMENDING FOR USER: " + user.username);
-    console.log("PREVIOUS DESIGN: " + prev);
-    console.log("DISTANCES :-");
-    console.log(DISTANCE_MATRIX[prev]);
-
-    let dists = DISTANCE_MATRIX[prev];
-    /* Sort distances and use user.condition to return appropriate results */
-    let tmp = new Array();
-    for (let o in dists)
-	tmp.push([o, dists[o]]);
-
-    if (user.condition == 'nearest')
-	tmp.sort((a,b) => a[1] - b[1]); /* sorts in ascending order */
-    else
-	tmp.sort((a,b) => b[1] - a[1]);
-
-    let diffdsgn = (e) => user.files.map((d) => d.path).indexOf(e) == -1
-    console.log("RECOMMENDATIONS: ");
-    console.log(tmp.map((e) => e[0] + '.stl').filter(diffdsgn).slice(0, N_RECOMMS));
-    return tmp.map((e) => e[0] + '.stl').filter(diffdsgn).slice(0, N_RECOMMS);
-}
-
-/* Might have to change this function based on path naming conventions
-   As of now, we can expect this to remove '.stl' from a path */
-function stripPath(p) {
-    return p.substring(0, p.length-4);
-}
 
 /* Work with conditions
  * For now we place each user alternatively in two conditions -
@@ -216,25 +141,6 @@ router.get('/login', function (req, res) {
     res.render('login');
 });
 
-router.post('/alt-register', (req, res) => {
-    /* TODO!
-     * Check whether the username already exists on the server!
-     */
-    req.checkBody('name', 'Please enter a name').notEmpty();
-    req.checkBody('email', 'Please enter an email address').notEmpty().isEmail();
-    req.checkBody('username', 'Please enter a username').notEmpty();
-    req.checkBody('password', 'Please enter a password').notEmpty();
-    req.checkBody('password2', 'Passwords should match!').equals(req.body.password);
-
-    
-    let userDetails = {name : req.body.name
-		       , email : req.body.email
-		       , username : req.body.username
-		       , password : req.body.password
-		       , password2 : req.body.password2}
-
-});
-
 router.post('/register', function (req, res) {
     var name = req.body.name;
     var email = req.body.email;
@@ -242,7 +148,6 @@ router.post('/register', function (req, res) {
     var password = req.body.password;
     var password2 = req.body.password2;
 
-    //VALIDATE
     req.checkBody('name', 'You have not entered a name').notEmpty();
     req.checkBody('email', 'Please enter an email address').notEmpty();
     req.checkBody('email', 'Please enter a valid email address').isEmail();
@@ -298,219 +203,6 @@ function log(data, pathToFile) {
 	    if (err) throw err;
 	});
     });
-}
-
-passport.use(new LocalStrategy(
-    function (username, password, done) {
-	User.getUserByUsername(username, function (err, user) {
-	    if (err) throw err;
-	    if (!user) {
-		return done(null, false, {
-		    message: 'Unknown User'
-		});
-	    }
-
-	    User.comparePassword(password, user.password, function (err, isMatch) {
-		if (err) throw err;
-		if (isMatch) {
-		    return done(null, user);
-		} else {
-		    return done(null, false, {
-			message: 'Invalid password'
-		    });
-		}
-	    });
-	});
-    }));
-
-passport.serializeUser(function (user, done) {
-    done(null, user.id);
-});
-
-passport.deserializeUser(function (id, done) {
-    User.getUserById(id, function (err, user) {
-	done(err, user);
-    });
-});
-
-/* TODO Rewrite Function */
-router.post('/upload', function (req, res) {
-    if (!req.files.sampleFile) {
-	req.flash('error_msg', 'Please choose a file');
-	res.redirect('/users/upload');
-	throw "no files were uploaded";
-	return;
-    }
-    // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
-    let sampleFile = req.files.sampleFile;
-    let xmas = sampleFile.name;
-    let info = 'not analyzed yet';
-    let t = req.body.text;
-    let option = req.body.type;
-    let urls = req.body.urls;
-    let flag = 0;
-    if (option == 'Remixed')
-	urls = urls.split(';');
-    // Use the mv() method to place the file somewhere on your server
-    var dir = path.join('./files/', req.user.username); //files/aubhik/
-    if (!fs.existsSync(dir)) {
-	fs.mkdirSync(dir);
-    }
-    if (!sampleFile) {
-	req.flash('error_msg', 'Please choose a file');
-	res.redirect('/users/upload');
-	throw "no files were uploaded";
-    }
-
-    sampleFile.mv(dir + '/' + req.files.sampleFile.name,
-		  function (err) {
-		      if (err)
-			  throw err;
-		      fs.writeFileSync(dir + '/' + req.files.sampleFile.name + '.txt', t,
-				       function (err) {
-					   if (err) {
-					       return console.log(err);
-					   }
-					   console.log("The file was saved!");
-				       });
-		  });
-
-    console.log(req.user);
-    
-    //If file is a STEP file
-    if (sampleFile.name.match(/.step/i)) {
-	//convert to stl
-	var convert_options = {
-	    mode: 'text',
-	    pythonPath: '/usr/bin/python2',
-	    pythonOptions: ['-u'],
-	    scriptPath: config.scriptsPath,
-	    args: [config.filesPath + req.user.username + '/' + sampleFile.name, dir + '/']
-	};
-
-	PythonShell.run('convert_to_stl.py', convert_options, function (err, results) {
-	    if (err) throw err;
-	    console.log('convert_to_stl.py -- results: %j', results);
-	});
-
-	/* The script `distance.py` prints out the "coordinates" of the design in a
-	   space where the basis is given by {volume, avg face area, number of faces} */
-	var distance_options = {
-	    mode: 'text',
-	    pythonPath: '/usr/bin/python2',
-	    pythonOptions: ['-u'],
-	    scriptPath: config.scriptsPath,
-	    args: [config.filesPath + req.user.username + '/' + sampleFile.name]
-	};
-
-	xmas = sampleFile.name.replace(/.step/i, '.stl');
-	let d = '/' + req.user.username + '/' + xmas;
-
-	PythonShell.run('distance.py', distance_options, function(err, results) {
-	    if (err) throw err;
-
-	    console.log('distance.py -- results: %j', results);
-	    l = results.length;
-	    volume = Number(results[l-3]);
-	    avg_face_area = Number(results[l-2]);
-	    nfaces = Number(results[l-1]);
-
-	    fobj = {
-		'desription': t,
-                'original_path': '/' + req.user.username + '/' + sampleFile.name,
-		'path': d,
-		'type': option,
-		'urls': urls,
-		'score': info,
-		'volume': volume,
-		'avg_face_area': avg_face_area,
-		'nfaces': nfaces
-	    };
-            console.log(fobj);
-
-	    DESIGNS.push({'user': req.user.username, 'design': fobj});
-
-	    // console.log("DESIGNS :");
-	    // console.log(DESIGNS);
-
-	    updateDistanceMatrix();
-	    // console.log("DISTANCE MATRIX");
-	    // console.log(DISTANCE_MATRIX);
-
-	    User.findOne({ 'username': req.user.username }, function(err, user) {
-		if (option != 'Remixed') {
-		    delete fobj.urls;
-		}
-		user.files.push(fobj);
-		user.save((err) => {
-		    if (err) throw err; 
-		});
-	    });
-	});
-
-	flag = 1;
-	//analyze("C:/Users/Aubhik/Desktop/JN/design-contest-research/site/files/" + req.user.username + '/' + sampleFile.name, "./", req.user.username);
-	analyze(config.filesPath + req.user.username + '/' + sampleFile.name, "./", req.user.username);
-    }
-
-    let d = '/' + req.user.username + '/' + xmas;
-
-    //store file in MongoDB database
-    if (!flag) {
-	User.findOne({
-	    'username': req.user.username
-	}, function (err, user) {
-	    info = 'cannot analyze a STL file. Please upload a STEP file'
-	    if (option == 'Remixed') {
-		user.files.push({
-		    'description': t,
-                    'original_path': '/' + req.user.username + '/' + sampleFile.name,
-		    'path': d,
-		    'type': option,
-		    'urls': urls,
-		    'score': info,
-		    'coordinates': design_props,
-		    'volume': design_props.volume, /* duplication of information, I know */
-		    'avg_face_area': design_props.avg_face_area,
-		    'nfaces': design_props.nfaces		    
-		});
-	    } else {
-		user.files.push({
-		    'description': t,
-                    'original_path': '/' + req.user.username + '/' + sampleFile.name,
-		    'path': d,
-		    'type': option,
-		    'score': info,
-		    'coordinates': design_props,
-		    'volume': design_props.volume, /* duplication of information, I know */
-		    'avg_face_area': design_props.avg_face_area,
-		    'nfaces': design_props.nfaces		    
-		});
-	    }
-	    user.save(function (err) {
-		if (err) throw err;
-	    });
-	});
-    }
-
-    /* let datetime = getDate();
-    let data = '\nU0 ' + datetime + ' ' + sampleFile.name + option + urls;
-    let pth = path.join(__dirname, '../files', req.user.username, req.user.username + '_log.txt');
-    log(data, pth); */
-    //userLog('FILE_UPLOAD', sampleFile.name + ' ' + option + ' ' + urls, req.user);
-    req.flash('success_msg', "File uploaded successfully!");
-    console.log("File uploaded successfully");
-    res.render('upload', {
-	// filename: sampleFile.name,
-	filename: xmas,
-	progress: 'true'
-    });
-});
-
-                                /* return true if file is not a valid STEP file */
-function valid(input) {
-        /* TODO perform additional checks on the file */
-        return input.name.match(/.step|.stp/i);
 }
 
 router.get('/altupload', (req, res) => {
@@ -625,112 +317,6 @@ router.post('/altupload', (req, res) => {
     });
 });
 
-router.get('/newupload', (req, res) => {
-        res.render('newupload');
-});
-
-router.post('/newupload', (req, res) => {
-        console.log(req.files.inputFile);
-                                                /* check whether a file was chosen */
-        if (!req.files.inputFile) {
-                req.flash('err_msg', 'Please choose a file');
-                res.redirect('/users/newupload');
-                return;
-        }
-
-        let input = req.files.inputFile;
-        let userName = req.user.username;
-        console.log("input: ", input);
-        console.log("userName: ", userName);
-                                                /* check whether the file is valid */
-        if (!valid(input)) {
-                req.flash('err_msg', 'Please choose a STEP file');
-                res.redirect('/users/newupload');
-                return;
-        }
-
-        let designName = input.name.replace(/.step|.stp/i,'');
-
-                                                /* transfer the file to location on the server */
-        let fileDir = path.join(__dirname, '../files', req.user.username);
-        let filePath = path.join(fileDir, input.name);
-        input.mv(filePath, (err) => {
-                if (err) recordErr('FILE_MV', err);
-        });
-
-        console.log("filedir ", fileDir);
-        console.log("filepath ", filePath);
-
-                                                /* convert file to STL - required for rendering */
-        let convert_options = {
-                mode: 'text',
-                pythonPath: '/usr/bin/python2',
-                pythonOptions: ['-u'],
-                scriptPath: config.scriptsPath,
-                args: [filePath, fileDir + '/']
-        };
-
-        PythonShell.run('convert_to_stl.py', convert_options, (err, results) => {
-                if (err) recordErr('FILE_CONVERT', err);
-                console.log('convert_to_stl.py -- results: %j', results);
-                /* at this point we should have an STL file in the server
-                   ready to render */
-        });
-        
-                                                /* compute "coordinates" of a design using the
-                                                   python script `distance.py` */
-        let distance_options = {
-                mode: 'text',
-                pythonPath: '/usr/bin/python2',
-                pythonOptions: ['-u'],
-                scriptPath: config.scriptsPath,
-                args: [filePath]
-        };
-
-        PythonShell.run('distance.py', distance_options, (err, results) => {
-                if (err) recordErr('DISTANCE_COMPUTE', err);
-                console.log('distance.py -- results: %j', results);
-                                                /* There should be a better way to extract the
-                                                   information */
-                let reslen = results.length;
-                let volume = Number(results[reslen-3]);
-                let avg_face_area = Number(results[reslen-2]);
-                let nfaces = Number(results[reslen-1]);
-
-                designObj = {
-                        'description': req.body.text,
-                        'name': designName,
-                        'original_path': '/' + req.user.username + '/' + input.name,
-                        'path': '/' + req.user.username + '/' + designName + '.stl',
-                        'type': req.body.type,
-                        'urls': req.body.urls,
-                        'volume': volume,
-                        'avg_face_area': avg_face_area,
-                        'nfaces': nfaces
-                };
-                console.log(designObj);
-
-                                                /* update global DESIGNS array and update distance
-                                                   matrix */
-                DESIGNS.push({'user': req.user.username, 'design': designObj});
-                updateDistanceMatrix();
-
-                                                /* push information to MongoDB database */
-                User.findOne({ 'username': req.user.username }, (err, user) => {
-                        user.files.push(designObj);
-                        console.log("USER FILES:")
-                        console.log(user.files);
-                        user.save((err) => {
-                                if (err) recordErr('DB_SAVE_ERR', err);
-                        });
-                });
-        });
-
-        //console.log("calling userLog with : ", userName);
-        //userLog('FILE_UPLOAD', input.name + ' ' + req.body.type + ' ' + req.body.urls, userName);
-        req.flash('success_msg', 'File uploaded successfully. Please wait a moment for it to reflect on your homepage.');
-        res.redirect('/users/homepage');
-});
 
 function getDate(){
     var currentdate = new Date();
@@ -742,49 +328,6 @@ function getDate(){
 	currentdate.getSeconds();
     return datetime;
 }
-
-function analyze(infile, outdir, username) {
-    console.log('Running analysis');
-    autofea_run(infile, outdir, function (e) {
-	e = JSON.stringify(e);
-	console.log('done', e);
-	User.findOne({
-	    'username': username
-	}, function (err, user) {
-	    let temp = user.files.pop();
-	    temp.score = e;
-	    user.files.push(temp);
-	    user.save(function (err) {
-		if (err) throw err;
-	    });
-	});
-    }, (e) => console.log(''));
-    console.log('analysis complete');
-}
-
-
-function autofea_run(infile, savedir, res_callback, end_callback) {
-    console.log('autofeaRun started');
-    let autofea = spawn('python', ['C:/Users/Aubhik/Desktop/JN/design-contest-research/programs/autofea-v0.5/autofea05.py', infile, '-s', savedir]);
-    result_str = '';
-    let flag = 0;
-    autofea.stdout.on('data', (data) => {
-	let resp = data.toString(),
-	    lines = resp.split(/(\r?\n)/g);
-	result_str += resp;
-	if (flag == 0) {
-	    // we only want the last line
-	    fea_resu = JSON.parse(lines[lines.length - 3]);
-	    res_callback(fea_resu);
-	    flag = 1;
-	    return;
-	} else
-	    return;
-    });
-    autofea.on('close', (close) => {
-	return end_callback(result_str);
-    });
-};
 
 router.get('/homepage', function (req, res) {
     var tempOrg = [],
@@ -804,7 +347,6 @@ router.get('/homepage', function (req, res) {
 	});
     });
 });
-
 
 router.get('/recommendations', (req, res) => {
     User.getUserByUsername(req.user.username, (err, user) => {
@@ -835,36 +377,6 @@ router.get('/recommendations', (req, res) => {
 	client.on('close', () => {
 	    console.log('Disconnected from the server.');
 	    /* Make sure to log all this information */
-	});
-    });
-});
-
-router.get('/old-recommendations', (req, res) => {
-    User.getUserByUsername(req.user.username, (err, user) => {
-	let recomms = recommend(user);
-
-	/* Note: prev_design is also computed in `recommend` */
-	let n_submits = user.files.length;
-	let prev_design = undefined;
-	let prev_name = undefined;
-	if (n_submits > 0) {
-	    prev_design = user.files[n_submits-1];
-	    prev_name = prev_design.path;
-	}
-
-	/* Logging
-	   TODO: Abstract away to a function */
-
-	// let datetime = getDate();
-	// let number_of_files = recomms.length;
-	// let data = '\nD' + number_of_files + ' ' + datetime + ' O:' + original.toString() + ' R:' + remixed.toString();
-	// let pth = path.join(__dirname, '../files', req.user.username, req.user.username + '_log.txt');
-	// log(data,pth);
-
-	res.render('recommendations', {
-	    org: recomms,
-	    usr: prev_design,
-	    prevName: prev_name
 	});
     });
 });
