@@ -1,0 +1,26 @@
+<!-- <div class='container'>
+  <h1 class='page-header text-center'>Homepage</h1>
+</div> -->
+
+<div class='container'>
+  <h4 class='page-header text-center' id='username'>Welcome to your homepage, {{{user.username}}}</h4>
+</div>
+
+<div class='container'>
+  <div id='designs' class='row'>
+    <ul id='designs-list'>
+      {{#each desg}}
+        <li>{{this}}</li>
+      {{/each}}
+    </ul>
+  </div>
+</div>
+
+<script type="text/javascript" src="/jsc3d.js"></script>
+<script type="text/javascript" src="/jsc3d.touch.js"></script>
+<script type="text/javascript" src="/jsc3d.console.js"></script>
+<script type="text/javascript" src="/timing.js"></script>
+<script type="text/javascript" src="/homepage-render.js"></script>
+<script type="text/javascript">
+window.onload = renderDesigns;
+</script>

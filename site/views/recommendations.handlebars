@@ -1,178 +1,21 @@
 <h2>Recommendations</h2>
 <div class='container'>
-	<div id='original' class='row'>
-		<ul id='originallist'>
-			{{#each org}}
-			<li>{{this}}</li>
-			{{/each}}
-		</ul>
-	</div>
-	<br>
+  <div id='designs' class='row'>
+    <ul id='designs-list'>
+      {{#each org}}
+	<li>{{this}}</li>
+      {{/each}}
+    </ul>
+  </div>
+  <br>
 </div>
 <br><br><br><br>
 <script type="text/javascript" src="/jsc3d.js"></script>
 <script type="text/javascript" src="/jsc3d.touch.js"></script>
 <script type="text/javascript" src="/jsc3d.console.js"></script>
 <script type="text/javascript" src="/external/Sonic/sonic.js"></script>
+<script type="text/javascript" src="/timing.js"></script>
+<script type="text/javascript" src="/homepage-render.js"></script>
 <script type="text/javascript">
-	window.onload = function () {
-                let model_color = '#caa618';
-                let background1 = '#ffffff';
-                let background2 = '#ffffff';
-                
-                // Render users previous design
-                // let px = document.getElementById('prevName');
-                // let prevPath = px.innerHTML;
-                // let xu = document.getElementById('previous');
-                // let du = document.createElement('canvas');
-                // du.setAttribute('width', '300%');
-                // du.setAttribute('height', '300%');
-                // du.setAttribute('class', 'img-fluid');
-                // xu.appendChild(du);
-                // var prev_viewer = new JSC3D.Viewer(du);
-                // prev_viewer.setParameter('SceneUrl', prevPath);
-                // prev_viewer.setParameter('InitRotationX', 20);
-                // prev_viewer.setParameter('InitRotationY', 20);
-                // prev_viewer.setParameter('InitRotationZ', 0);
-                // prev_viewer.setParameter('ModelColor', model_color);
-                // prev_viewer.setParameter('BackgroundColor1', background1);
-                // prev_viewer.setParameter('BackgroundColor2', background2);
-                // prev_viewer.setParameter('RenderMode', 'flat');
-                // prev_viewer.setParameter('Renderer', 'webgl');
-                // prev_viewer.setParameter('ProgressBar', 'off');
-                // prev_viewer.init();
-                // prev_viewer.update();
-
-                // --- Aubhik ---
-		let z = document.getElementById('original');
-		let x = document.getElementById('originallist');
-		let items = x.getElementsByTagName('li');
-		x.style.display = 'none';
-		if (items.length == 0) {
-			var res = document.createElement('h4');
-			res.style = 'width:120%';
-			res.innerHTML = 'There are no designs to display';
-			res.align = 'center';
-			z.appendChild(res);
-			return;
-		}
-		//CREATE DIV AND CARD FOR EACH DESIGN
-		for (let i = 0; i < items.length; i++) {
-			var card = document.createElement('div');
-			card.setAttribute("class", "col-sm-4");
-			card.setAttribute("style", "padding-bottom:10px");
-			card.id = 'co' + i.toString();
-			z.appendChild(card);
-			var dd = document.createElement('div');
-			var linker = document.createElement('a');
-			linker.setAttribute('href', '/users/design' + items[i].innerHTML.toString());
-			linker.id = 'ao' + i.toString();
-			var p = document.createElement('p');
-			p.innerHTML = items[i].innerHTML.toString().replace(/\/\w+?\//g, '');
-			p.align = 'center';
-			p.setAttribute("class", "card-header");
-			dd.setAttribute("class", "card");
-			dd.id = 'do' + i.toString();
-			var cardhead = document.getElementById('co' + i.toString());
-			cardhead.appendChild(dd);
-			var newdiv = document.getElementById('do' + i.toString());
-			newdiv.appendChild(linker);
-			var newlink = document.getElementById('ao' + i.toString());
-			newlink.appendChild(p);
-		}
-
-		for (let i = 0; i < items.length; i++) {
-			let istring = i.toString();
-			let tempPath = items[i].innerHTML.toString();
-			var d = document.createElement('canvas');
-			var div = document.getElementById('do' + i.toString());
-			d.setAttribute('id', 'o' + istring);
-			d.setAttribute('width', '300%');
-			d.setAttribute('height', '300%');
-			d.setAttribute('style', 'padding:5px 5px 5px 5px');
-			div.appendChild(d);
-			var viewer = new JSC3D.Viewer(d);
-			var logoTimerID = 0;
-			viewer.setParameter('SceneUrl', tempPath);
-			viewer.setParameter('InitRotationX', 20);
-			viewer.setParameter('InitRotationY', 20);
-			viewer.setParameter('InitRotationZ', 0);
-			// viewer.setParameter('ModelColor', '#ffff00');
-                        viewer.setParameter('ModelColor', model_color);
-			// viewer.setParameter('BackgroundColor1', '#6A6AD4');
-                        viewer.setParameter('BackgroundColor1', '#FFFFFF');
-			// viewer.setParameter('BackgroundColor2', '#6A6AD4');
-                        viewer.setParameter('BackgroundColor2', '#FFFFFF');
-			viewer.setParameter('RenderMode', 'flat');
-			viewer.setParameter('Renderer', 'webgl');
-			//viewer.setParameter('SphereMapUrl', 'chrome.jpg');
-			viewer.setParameter('ProgressBar', 'off');
-			viewer.init();
-			viewer.update();
-		}
-
-		z = document.getElementById('remixed');
-		x = document.getElementById('remixedlist');
-		items = x.getElementsByTagName('li');
-		x.style.display = 'none';
-		if (items.length == 0) {
-			var res = document.createElement('h4');
-			res.style = 'width:120%';
-			res.innerHTML = 'There are no designs to display';
-			res.align = 'center';
-			z.appendChild(res);
-			return;
-		}
-		//CREATE DIV AND CARD FOR EACH DESIGN
-		for (let i = 0; i < items.length; i++) {
-			var card = document.createElement('div');
-			card.setAttribute("class", "col-sm-4");
-			card.setAttribute("style", "padding-bottom:10px");
-			card.id = 'cr' + i.toString();
-			z.appendChild(card);
-			var dd = document.createElement('div');
-			var linker = document.createElement('a');
-			linker.setAttribute('href', '/users/design' + items[i].innerHTML.toString());
-			linker.id = 'ar' + i.toString();
-			var p = document.createElement('p');
-			p.innerHTML = items[i].innerHTML.toString().replace(/\/\w+?\//g, '');
-			p.align = 'center';
-			p.setAttribute("class", "card-header");
-			dd.setAttribute("class", "card");
-			dd.id = 'dr' + i.toString();
-			var cardhead = document.getElementById('cr' + i.toString());
-			cardhead.appendChild(dd);
-			var newdiv = document.getElementById('dr' + i.toString());
-			newdiv.appendChild(linker);
-			var newlink = document.getElementById('ar' + i.toString());
-			newlink.appendChild(p);
-		}
-
-		for (let i = 0; i < items.length; i++) {
-			let istring = i.toString();
-			let tempPath = items[i].innerHTML.toString();
-			var d = document.createElement('canvas');
-			var div = document.getElementById('dr' + i.toString());
-			d.setAttribute('id', 'r' + istring);
-			d.setAttribute('width', '300%');
-			d.setAttribute('height', '300%');
-			d.setAttribute('style', 'padding:5px 5px 5px 5px');
-			div.appendChild(d);
-			var viewer = new JSC3D.Viewer(d);
-			var logoTimerID = 0;
-			viewer.setParameter('SceneUrl', tempPath);
-			viewer.setParameter('InitRotationX', 20);
-			viewer.setParameter('InitRotationY', 20);
-			viewer.setParameter('InitRotationZ', 0);
-			viewer.setParameter('ModelColor', '#ffff00');
-			viewer.setParameter('BackgroundColor1', '#000000');
-			viewer.setParameter('BackgroundColor2', '#000000');
-			viewer.setParameter('RenderMode', 'flat');
-			viewer.setParameter('Renderer', 'webgl');
-			//viewer.setParameter('SphereMapUrl', 'chrome.jpg');
-			viewer.setParameter('ProgressBar', 'off');
-			viewer.init();
-			viewer.update();
-		}
-	}
+window.onload = renderDesigns;
 </script>

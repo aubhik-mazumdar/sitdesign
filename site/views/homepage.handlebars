@@ -2,7 +2,7 @@
 	<h1 class="page-header text-center">DASHBOARD</h1>
 </div>
 <div class='container'>
-	<h4 class='page-header text-center'>Welcome to your dashboard, {{{user.username}}}</h4>
+	<h4 class='page-header text-center' id='username'>Welcome to your dashboard, {{{user.username}}}</h4>
 </div>
 <div class='container'>
 	<h3 class='text-center'>ORIGINAL FILES</h3>
@@ -27,7 +27,14 @@
 <script type="text/javascript" src="/jsc3d.touch.js"></script>
 <script type="text/javascript" src="/jsc3d.console.js"></script>
 <script type="text/javascript" src="/external/Sonic/sonic.js"></script>
+<script type="text/javascript" src="/timing.js"></script>
 <script type="text/javascript">
+
+	var myDivs = new Array();
+	var myWatchers = new Array();
+
+	// var userName = document.getElementById('username').innerText;
+
 	window.onload = function () {
 		let z = document.getElementById('original');
 		let x = document.getElementById('originallist');
@@ -72,7 +79,7 @@
 			newlink.appendChild(p);
 			var icon = document.createElement('i');
 			icon.setAttribute('class','material-icons');
-			icon.innerHTML='delete';
+			icon.innerHTML = 'delete';
 			var newlink2 = document.getElementById('ado' + i.toString());
 			newlink2.appendChild(icon);			
 		}
@@ -82,6 +89,9 @@
 			let tempPath = items[i].innerHTML.toString();
 			var d = document.createElement('canvas');
 			var div = document.getElementById('do' + i.toString());
+
+			myDivs.push(div);
+
 			d.setAttribute('id', 'o' + istring);
 			d.setAttribute('width', '300%');
 			d.setAttribute('height', '300%');
@@ -167,6 +177,22 @@
 			viewer.setParameter('ProgressBar', 'off');
 			viewer.init();
 			viewer.update();
+		}
+
+
+		/* Start watching each div in myDivs */
+		for (let i = 0; i < myDivs.length; i++) {
+		    let designName = myDivs[i].innerText.split(/\s/)[0];
+		    // let designName = items[i].innerHTML.toString();
+		    console.log(designName);
+
+		    let w = watchDiv(myDivs[i], designName);
+		    myWatchers.push(w);
+
+		    if (document.addEventListener)
+		        document.addEventListener('click', w.unwatch, false);
+		    else
+			document.attachEvent('onclick', w.unwatch);
 		}
 	}
 </script>

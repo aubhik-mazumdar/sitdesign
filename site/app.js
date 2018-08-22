@@ -41,6 +41,7 @@ app.use(cookieParser());
 // Set Static Folder
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'files')));
+app.use(express.static(path.join(__dirname, 'scripts')));
 app.use(express.static(path.join(__dirname, 'scripts/jsc3d-full-1.6.5')));
 app.use(express.static(path.join(__dirname, 'designs')));
 

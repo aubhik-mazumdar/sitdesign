@@ -329,6 +329,21 @@ function getDate(){
     return datetime;
 }
 
+router.get('/new-homepage', (req, res) => {
+    let designs = [];
+    User.findOne({
+	'username': req.user.username
+    }, (err, user) => {
+	for (let i = 0; i < user.files.length; i++) {
+	    designs.push(user.files[i].path);
+	}
+
+	res.render('new-homepage', {
+	    desg: designs
+	});
+    });
+});
+
 router.get('/homepage', function (req, res) {
     var tempOrg = [],
 	tempRem = [];
@@ -449,6 +464,7 @@ router.get('/userinfo', function(req, res) {
 	nfiles: user.files.length
     });
 });
+
 
 router.get('/download/:userId/:designName', (req, res) => {
         let currUser = req.user.username;
@@ -658,5 +674,19 @@ router.post('/contact',function(req,res){
 	}
     }); 
 });
+
+router.post('/:userId/:designName/time', (req, res) => {
+    console.log("GOT IT (POST)! CONGRATULATIONS");
+    console.log("INTERACT: ", req.params.userId, req.params.designName, ":", req.user.username);
+    let value = req.body;
+    console.log(value);
+    res.send('done');
+});
+
+router.get('/:userId/:designName/time', (req, res) => {
+    console.log("GOT IT! CONGRATULATIONS");
+    console.log(req);
+});
+
 
 module.exports = router;

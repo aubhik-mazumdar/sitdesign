@@ -4,38 +4,51 @@
     <td style='text-align:center'><h3 id='fileName'>{{{fileName}}}</h3></td>
     <td style='text-align:right'>
       <form action="/users/download/{{{uname}}}/{{{dname}}}">
-        <button class="btn btn-primary type="submit">Download</button>
+      <button class="btn btn-primary" type="submit">Download</button>
       </form>
+
+      {{#is current uname}}
+      <form action="/users/delete/{{{uname}}}/{{{dname}}}">
+      <button class="btn btn-primary" type="submit"style="background-color: firebrick;">Delete</button>
+      </form>
+      {{/is}}
     </td>
   </tr>
 </table>
+
 <div class='container'>
-    <table id='info' class='table table-dark table-bordered' style="table-layout: fixed; width: 100%">
+  <div id='mainFrame' align='center'>
+  </div>
+</div>
+
+<div class='container'>
+<!-- <table id='info' class='table table-dark table-bordered' style="table-layout: fixed; width: 100%"> -->
+  <table id='info' class='table table-bordered' style='table-layout:fixed; width:100%'>
         <tr>
-            <td style='text-align:center'>CREATOR</td>
+            <td style='text-align:center'>Name</td>
+            <td>{{{dname}}}</td>
+        </tr>    
+        <tr>
+            <td style='text-align:center'>Creator</td>
             <td>{{{uname}}}</td>
         </tr>
         <tr>
-            <td style='text-align:center'>DESIGN NAME</td>
-            <td>{{{dname}}}</td>
-        </tr>
-        <tr>
-            <td style='text-align:center'>DESCRIPTION</td>
+            <td style='text-align:center'>Description</td>
             <td>{{{desp}}}</td>
         </tr>
-        {{#is current uname}} 
+        {{#is current uname}}
         <tr>
-            <td style='text-align:center'>SCORE</td>
+            <td style='text-align:center'>Score</td>
             <td style="word-wrap:break-word">{{{score}}}</td>
         </tr>
         {{/is}}
         <tr>
-            <td style='text-align:center'>URL</td>
+            <td style='text-align:center'>Url</td>
             <td>{{{url}}}</td>
         </tr>
         {{#if links}}
         <tr>
-            <td style='text-align:center'>REMIXED FROM</td>
+            <td style='text-align:center'>Remixed from</td>
             <td>{{#each links}}
                 <a href='http://{{{this}}}'>{{{this}}},</a>
                 {{/each}}
@@ -79,34 +92,50 @@
         <td id='t2'>0 ms</td>
       </tr>
     </table> --}}
-
-    <div id='mainFrame' align='center'>
-    </div>
 </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script type="text/javascript" src="/jsc3d.js"></script>
 <script type="text/javascript" src="/jsc3d.touch.js"></script>
 <script type="text/javascript" src="/jsc3d.console.js"></script>
 <script type="text/javascript" src="/external/Sonic/sonic.js"></script>
+<script type="text/javascript" src="/timing.js"></script>
 <script type="text/javascript">
+    
     var backGroundColor1 = "#FFFFFF";
     var backGroundColor2 = "#FFFFFF";
     var modelColor = "#CAA618";
+
+    var div = document.getElementById('mainFrame');
+    var filename = document.getElementById('fileName').innerText;
+
+    w = watchDiv(div, filename);
+
+    if (document.addEventListener)
+        document.addEventListener('click', w.unwatch, false);
+    else
+        document.attachEvent('onclick', w.unwatch);
+
+
     window.onload = function () {
+
         let x = document.getElementById('fileName');
         let tempPath = x.innerHTML;
         x.style.display = 'none';
+
         var d = document.createElement('canvas');
         d.setAttribute('width', '500%');
         d.setAttribute('height', '500%');
         d.setAttribute('class', 'img-fluid');
-        var div = document.getElementById('mainFrame');
+
+        // var div = document.getElementById('mainFrame');
+
         div.appendChild(d);
         var viewer = new JSC3D.Viewer(d);
         var logoTimerID = 0;
         viewer.setParameter('SceneUrl', tempPath);
-        viewer.setParameter('InitRotationX', 20);
-        viewer.setParameter('InitRotationY', 20);
-        viewer.setParameter('InitRotationZ', 0);
+        viewer.setParameter('InitRotationX', 45);
+        viewer.setParameter('InitRotationY', -45);
+        viewer.setParameter('InitRotationZ', -45);
         viewer.setParameter('ModelColor', modelColor);
         viewer.setParameter('BackgroundColor1', backGroundColor1);
         viewer.setParameter('BackgroundColor2', backGroundColor2);
@@ -116,73 +145,5 @@
         viewer.setParameter('ProgressBar', 'off');
         viewer.init();
         viewer.update();
-
-        var Stopwatch = function(elem) {
-            var offset, interval;
-            var clock = 0;
-            var start = () => {
-                if (!interval) {
-                    offset = Date.now();
-                    interval = setInterval(update, 10); /* update every 10 milliseconds */
-                }
-            }
-            var stop = () => {
-                if (interval) {
-                    clearInterval(interval);
-                    interval = null;
-                }
-            }
-            var update = () => {
-                clock += delta();
-                elem.innerHTML = clock/1000 + " s";
-            }
-            var delta = () => {
-                var now = Date.now();
-                var d = now - offset;
-                offset = now;
-                return d;
-            }
-            this.start = start;
-            this.stop = stop;
-            this.tick = clock;
-        }
-
-        let rawTimer = new Stopwatch(document.getElementById('t1'));
-        let interactionTimer = new Stopwatch(document.getElementById('t2'));
-        
-        div.addEventListener("mouseover", (e) => {
-            console.log("over");
-            rawTimer.start();
-        });
-
-        div.addEventListener("mouseout", (e) => {
-            console.log("out");
-            rawTimer.stop();
-        });
-
-        div.addEventListener("pointerdown", (e) => {
-            console.log("pointer down");
-            interactionTimer.start();
-        });
-
-        div.addEventListener("pointerup", (e) => {
-            console.log("pointer up");
-            interactionTimer.stop();
-        });
-    }
-
-    function analyze() {
-        let x = document.getElementById('info');
-        var row = x.insertRow(0);
-
-        // Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-
-        // Add some text to the new cells:
-        cell1.innerHTML = "SCORE";
-        cell1.style = 'text-align:center';
-        cell2.innerHTML = "STRENGTH: 92% , MAXIMUM SHEER STRESS: 3.96";
-        document.getElementById('analyze').style.display = 'none';
     }
 </script>
