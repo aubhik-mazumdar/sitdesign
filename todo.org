@@ -13,7 +13,8 @@
 
 ** TODO Website Logic Changes                                           :js:
 - [ ] Link to inspiring design broken on design page
-- [ ] Session management faulty. Add session cookies or authenticate each time?
+- [ ] Session management faulty(back page loading without session creds). Add session cookies or authenticate each time?
+- [ ] STL file submission breaking website. Consider adding an error message and directions.
 
 ** TODO AWS Modification                                                :aws:            
 - [ ] Route53 to add better alias for DNS name
