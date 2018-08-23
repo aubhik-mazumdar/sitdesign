@@ -11,6 +11,15 @@
 - [X] Remove design from DesignDomain object
 - [ ] Error Checking
 
+** TODO Website Logic Changes                                           :js:
+- [ ] Link to inspiring design broken on design page
+- [ ] Session management faulty. Add session cookies or authenticate each time?
+
+** TODO AWS Modification                                                :aws:            
+- [ ] Route53 to add better alias for DNS name
+- [ ] Kubernetes cluster deployment?
+- [ ] Docker containerization for dependency management and isolation
+
 ** TODO User Registration [0/3]                                         :js:
 
 - [ ] Check whether the same username exists
