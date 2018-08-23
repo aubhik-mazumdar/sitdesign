@@ -61,15 +61,15 @@ var watchDiv = function (div, filename) {
 
     this.unwatch = (e) =>  {
 
-	console.log(e);
-	console.log(e.tagName);
+	// console.log(e);
+	// console.log(e.tagName);
 	
 	if (e.target.tagName == 'A' || e.target.tagName == 'BUTTON' || e.target.id == 'watch') {
-	    console.log("TIMING INFORMATION");
-	    console.log(this.rawTimer.getTime());
-	    console.log(this.interactionTimer.getTime());
+	    // console.log("TIMING INFORMATION");
+	    // console.log(this.rawTimer.getTime());
+	    // console.log(this.interactionTimer.getTime());
 
-	    alert('You clicked on an exit point');
+	    // alert('You clicked on an exit point');
 
 	    // let rawTime = this.rawTimer.getTime();
 	    // let interactionTime = this.interactionTimer.getTime();
@@ -79,7 +79,7 @@ var watchDiv = function (div, filename) {
 
 	    let sendToPath = '/users' + filename + '/time';
 
-	    console.log(sendToPath); /* DEBUG */
+	    // console.log(sendToPath); /* DEBUG */
 
 	    // $.post(sendToPath, {rawTime: rawTime, interactionTime: interactionTime},
 	    // 	   function (returnedData) {
@@ -92,9 +92,10 @@ var watchDiv = function (div, filename) {
 		       console.log(returnedData);
 		   });
 	    
-	} else {
-	    console.log(e.target.tagName);
 	}
+	// else {
+	//     // console.log(e.target.tagName);
+	// }
     }
     return this;
 }
