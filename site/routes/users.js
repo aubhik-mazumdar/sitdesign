@@ -3,6 +3,7 @@ var express	  = require('express');
 var fileUpload	  = require('express-fileupload');
 var fs		  = require('fs');
 var LocalStrategy = require('passport-local').Strategy;
+var logger        = require('../scripts/logging');
 var net		  = require('net');
 var nodemailer    = require('nodemailer');
 var passport	  = require('passport');
@@ -69,32 +70,53 @@ function* conditionGenerator(conditions) {
 let getCondition = conditionGenerator(['nearest', 'farthest']);
 
 
+// function getDate(){
+//     var currentdate = new Date();
+//     var datetime = currentdate.getDate() + "/" +
+// 	(currentdate.getMonth() + 1) + "/" +
+// 	currentdate.getFullYear() + " @ " +
+// 	currentdate.getHours() + ":" +
+// 	currentdate.getMinutes() + ":" +
+// 	currentdate.getSeconds();
+//     return datetime;
+// }
+
+
 /** Logging **/
-                                /* userLog: handle logging at the user level */
-function userLog(action, info, name) {
-        let timeStamp = getDate();
-        // let name = user.username;
-        console.log("action: ", action);
-        console.log("info: ", info);
-        console.log("name: ", name);
-        let filePath = path.join(__dirname, '../files', name, 'activity.log'); 
-        console.log("log filepath: ", filePath);
-        let data = '\n' + timeStamp + ' : ' + action + ' - ' + info;
-        fs.open(filePath, 'a', (err, fd) => {
-                if (err) recordErr('LOG_ERROR ' + name, err);
-                fs.appendFile(fd, data, (err) => {
-                        if (err) recordErr('LOG_ERROR ' + name, err);
-                        fs.close(fd, (err) => {
-                                if (err) recordErr('LOG_ERROR ' + name, err);
-                        });
-                });
-        });
-        return;
-}
+// function logger.userLog(action, info, name) {
+//     let timeStamp = getDate();
+
+//     console.log("action: ", action);
+//     console.log("info: ", info);
+//     console.log("name: ", name);
+
+//     let filePath = path.join(__dirname, '../files', name, 'activity.log');
+//     console.log("log filepath: ", filePath);
+
+//     let errMsg = timeStamp + ' unable to log information; affected user: ' + name;
+
+//     let data = '\n' + timeStamp + ' : ' + action + ' - ' + info;
+//     fs.open(filePath, 'a', (err, fd) => {
+// 	if (err) {
+// 	    console.log(errMsg);
+// 	}
+
+// 	fs.appendFile(fd, data, (err) => {
+// 	    if (err) {
+// 		console.log(errMsg);
+// 	    }
+// 	    fs.close(fd, (err) => {
+// 		if (err) {
+// 		    console.log(errMsg);
+// 		}
+// 	    });
+// 	});
+//     });
+// }
 
                                 /* recordErr: log error information to a errors.log file */
 function recordErr(msg, err) {
-        let timeStamp = getDate();
+        let timeStamp = logger.getDate();
         let filePath = path.join(__dirname, 'errors.log');
         let data = msg + '\n\t' + err + '\n'
         fs.open(filePath, 'a', (err, fd) => {
@@ -110,7 +132,7 @@ function recordErr(msg, err) {
 }
                                 /* globalLog: handle logging at the global level */
 function globalLog(action, info) {
-        let timeStamp = getDate();
+        let timeStamp = logger.getDate();
         let filePath = path.join(__dirname, '../', 'global.log');
         let data = timeStamp + ' : ' + action + ' - ' + info + '\n';
         fs.open(filePath, 'a', (err, fd) => {
@@ -126,10 +148,12 @@ function globalLog(action, info) {
 }
 
 router.get('/upload', function (req, res) {
+    logger.userLog('VISIT', 'UPLOAD PAGE', req.user.username);
     res.render('upload');
 });
 
 router.get('/contact', function (req, res) {
+    logger.userLog('VISIT', 'CONTACT PAGE', req.user.username);
     res.render('contact');
 })
 
@@ -172,7 +196,7 @@ router.post('/register', function (req, res) {
 	    if (err) throw err;
 	    console.log(user);
 	    //C0 31/3/2018 @ 12:13:43
-	    let datetime = getDate();
+	    let datetime = logger.getDate();
 	    let data = 'C0 ' + datetime;
 	    // let pth = path.join(__dirname, '../files', name, name + '_log.txt');
 	    // let dir = path.join(__dirname, '../files', name);
@@ -206,6 +230,7 @@ function log(data, pathToFile) {
 }
 
 router.get('/altupload', (req, res) => {
+    logger.userLog('VISIT', 'UPLOAD PAGE', req.user.username);
     res.render('altupload');
 });
 
@@ -243,6 +268,9 @@ router.post('/altupload', (req, res) => {
     console.log('username: ', userName);
     console.log('filedir: ', fileDir);
     console.log('filepath: ', filePath);
+
+    let action = 'UPLOAD ' + filePath;
+    logger.userLog('ACTION', action, userName);
 
     const client = net.createConnection({port: PORT, host: HOST}, () => {
 	console.log('connected to COMPUTE server');
@@ -317,19 +345,8 @@ router.post('/altupload', (req, res) => {
     });
 });
 
-
-function getDate(){
-    var currentdate = new Date();
-    var datetime = currentdate.getDate() + "/" +
-	(currentdate.getMonth() + 1) + "/" +
-	currentdate.getFullYear() + " @ " +
-	currentdate.getHours() + ":" +
-	currentdate.getMinutes() + ":" +
-	currentdate.getSeconds();
-    return datetime;
-}
-
-router.get('/new-homepage', (req, res) => {
+router.get('/homepage', (req, res) => {
+    logger.userLog('VISIT', 'HOME PAGE', req.user.username);
     let designs = [];
     User.findOne({
 	'username': req.user.username
@@ -344,7 +361,7 @@ router.get('/new-homepage', (req, res) => {
     });
 });
 
-router.get('/homepage', function (req, res) {
+router.get('/old-homepage', function (req, res) {
     var tempOrg = [],
 	tempRem = [];
     User.findOne({
@@ -364,6 +381,7 @@ router.get('/homepage', function (req, res) {
 });
 
 router.get('/recommendations', (req, res) => {
+    logger.userLog('VISIT', 'RECOMMENDATIONS PAGE', req.user.username);
     User.getUserByUsername(req.user.username, (err, user) => {
 
 	const client = net.createConnection({port: PORT, host: HOST}, () => {
@@ -381,6 +399,10 @@ router.get('/recommendations', (req, res) => {
 
 	client.on('data', (data) => {
 	    let result = JSON.parse(data);
+	    for (let i = 0; i < result.recommendations.length; i++) {
+		let info = result.recommendations[i];
+		logger.userLog('\tSHOW ', info, req.user.username);
+	    }
 	    res.render('recommendations', {
 		org: result.recommendations /* org stands for original btw, and is
 					     * used here since the layout for 'recommendations'
@@ -410,7 +432,7 @@ router.get('/explore', function (req, res) {
 	    }
 	}
 
-	let datetime = getDate();
+	let datetime = logger.getDate();
 	let number_of_files = remixed.length + original.length;
 	let data = '\nD' + number_of_files + ' ' + datetime + ' O:' + original.toString() + ' R:' + remixed.toString();
 	let pth = path.join(__dirname, '../files', req.user.username, req.user.username + '_log.txt');
@@ -436,25 +458,22 @@ router.post('/login',
 		// If this function gets called, authentication was successful.
 		// `req.user` contains the authenticated user.
 		//L1 2/4/2018 @ 12:23:43
-		let datetime = getDate();
-		let data = '\nL1 ' + datetime;
-		let pth = path.join(__dirname, '../files', user.name, user.name + '_log.txt');
-		log(data, pth);
+
+		logger.userLog('\nLOGIN','\n', req.user.username);
+				
 		res.redirect('/users/' + req.user.username);
 	    });
 
 router.get('/logout', function (req, res) {
     //L0 2/4/2018 @ 12:23:43
-    let datetime = getDate();
-    let data = '\nL0 ' + datetime;
-    let pth = path.join(__dirname, '../files', req.user.username, req.user.username + '_log.txt');
-    log(data, pth);
+    logger.userLog('LOGOUT', '\n', req.user.username);
     req.logout();
     req.flash('success_msg', 'You are now logged out');
     res.redirect('/users/login');
 });
 
 router.get('/userinfo', function(req, res) {
+    logger.userLog('VISIT', 'PROFILE PAGE', req.user.username);
     let user = req.user;
     res.render('userinfo', {
 	uname: user.username,
@@ -465,25 +484,27 @@ router.get('/userinfo', function(req, res) {
     });
 });
 
-
 router.get('/download/:userId/:designName', (req, res) => {
-        let currUser = req.user.username;
-        let reqFilePath = '/' + req.params.userId + '/' + req.params.designName;
-        console.log(reqFilePath);
-        let filePath = undefined;
-        User.findOne({ 'username': req.params.userId }, (err, user) => {
-                if (err) recordErr('DOWNLOAD_ERROR', err);
-                for (let i = 0; i < user.files.length; i++) {
-                        if (user.files[i].path == reqFilePath) {
-                                filePath = user.files[i]['original_path'];
-                        }
-                }
-                if (filePath !== undefined)
-                        filePath = path.join(__dirname, '../files', filePath);
-                console.log("FILEPATH FOR DOWNLOAD");
-                console.log(path.join(filePath));
-                res.download(filePath);
-        });
+    let currUser = req.user.username;
+    let reqFilePath = '/' + req.params.userId + '/' + req.params.designName;
+    console.log(reqFilePath);
+    let filePath = undefined;
+    User.findOne({ 'username': req.params.userId }, (err, user) => {
+        if (err) recordErr('DOWNLOAD_ERROR', err);
+        for (let i = 0; i < user.files.length; i++) {
+            if (user.files[i].path == reqFilePath) {
+                filePath = user.files[i]['original_path'];
+            }
+        }
+        if (filePath !== undefined)
+            filePath = path.join(__dirname, '../files', filePath);
+        console.log("FILEPATH FOR DOWNLOAD");
+        console.log(path.join(filePath));
+
+	logger.userLog('DOWNLOAD', filePath, req.user.username);
+	
+        res.download(filePath);
+    });
 });
 
 router.get('/delete/:userId/:designName', (req, res) => {
@@ -523,6 +544,8 @@ router.get('/delete/:userId/:designName', (req, res) => {
 	    user.save((err) => {
 		if (err) throw err;
 	    });
+
+	    logger.userLog('DELETE', request.designPath, req.user.username);
 
 	    client.write(JSON.stringify(request));
 	});
@@ -585,6 +608,14 @@ router.get('/design/:userId/:designName', function (req, res) {
     var volume;
     var avg_face_area;
     var nfaces;
+
+    let designName = temp2;
+    if (designName.endsWith('.stl')) {
+	designName.replace(/.stl/i, '');
+    }
+    
+    logger.userLog('VISIT', 'DESIGN PAGE ' + designName, req.user.username);
+    
     User.findOne({
 	'username': req.params.userId
     }, function (err, user) {
@@ -614,17 +645,17 @@ router.get('/design/:userId/:designName', function (req, res) {
 	if (!dsp)
 	    dsp = 'no description';
 	//V1 2/4/2018 @ 12:23:43
-	let datetime = getDate();
-	if(req.user.username==req.params.userId){
-	    let data = '\nV0 ' + datetime +' '+ req.protocol + '://' + req.hostname + req.originalUrl;;
-	    let pth = path.join(__dirname, '../files', req.user.username, req.user.username + '_log.txt');
-	    log(data, pth);
-	}
-	else{
-	    let data = '\nV1 ' + datetime +' '+ req.protocol + '://' + req.hostname + req.originalUrl;;
-	    let pth = path.join(__dirname, '../files', req.user.username, req.user.username + '_log.txt');
-	    log(data, pth);
-	}
+	// let datetime = getDate();
+	// if(req.user.username==req.params.userId){
+	//     let data = '\nV0 ' + datetime +' '+ req.protocol + '://' + req.hostname + req.originalUrl;;
+	//     let pth = path.join(__dirname, '../files', req.user.username, req.user.username + '_log.txt');
+	//     log(data, pth);
+	// }
+	// else{
+	//     let data = '\nV1 ' + datetime +' '+ req.protocol + '://' + req.hostname + req.originalUrl;;
+	//     let pth = path.join(__dirname, '../files', req.user.username, req.user.username + '_log.txt');
+	//     log(data, pth);
+	// }
 	res.render('design', {
 	    current: req.user.username,
 	    title: req.params.designName,
@@ -643,6 +674,7 @@ router.get('/design/:userId/:designName', function (req, res) {
 });
 
 router.get('/contact',function(req,res){
+    logger.userLog('VISIT', 'CONTACT PAGE', req.user.username);
     res.render('contact');
 });
 
@@ -676,16 +708,14 @@ router.post('/contact',function(req,res){
 });
 
 router.post('/:userId/:designName/time', (req, res) => {
-    console.log("GOT IT (POST)! CONGRATULATIONS");
-    console.log("INTERACT: ", req.params.userId, req.params.designName, ":", req.user.username);
+    let designPath = path.join('/',req.params.userId,req.params.designName);
     let value = req.body;
-    console.log(value);
-    res.send('done');
-});
+    let info = 'raw-time ' + value.rawTime + ' interaction-time ' + value.interactionTime;
 
-router.get('/:userId/:designName/time', (req, res) => {
-    console.log("GOT IT! CONGRATULATIONS");
-    console.log(req);
+    logger.userLog('INTERACT', designPath + ' ' + info, req.user.username);
+    
+    console.log(value);    
+    res.send('done');
 });
 
 

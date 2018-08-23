@@ -1,3 +1,4 @@
+import datetime
 import json
 import ntpath
 import pickle
@@ -6,8 +7,18 @@ import socket
 from design import Design
 from domain import DesignDomain
 
+LOG_FILE = '../system-log.log'
 DOMAIN_FILE = './design-domain.pickle'
 RECOMM_NUM = 3 # max number of designs to recommend
+
+def log(*args):
+    val = reduce(lambda a, x: a + ' ' + str(x), args, '')
+    print val
+    with open(LOG_FILE, 'a') as f:
+        f.write(str(datetime.datetime.now()) + ' ' + val + '\n')
+    return
+
+log('---- STARTING UP ----', '\n')
 
 Dom = DesignDomain(DOMAIN_FILE)
 
@@ -35,6 +46,8 @@ def handle_request(req):
         print('Distance Matrix: ')
         print(Dom.dmat)
 
+        log('UPLOAD', req['filePath'], 'by', req['userName'], '\n\tPROPERTIES', str(des.project()))
+
         return json.dumps(result)
 
     elif command == u'RECOMMEND':
@@ -42,17 +55,21 @@ def handle_request(req):
         names = map(lambda x: x[0], recomms)
         paths = map(render_path, names)
         result = {'recommendations': paths}
-        
+
+        log('RECOMMEND', 'to', req['userName'], '\n\tDESIGNS', str(paths))
+
         return json.dumps(result)
 
     elif command == u'DELETE':
         print('Received DELETE request')
         print('Request: ')
-        print(request)
+        print(req)
 
-        Dom.remove_design(request['userName'], request['designName'])
+        Dom.remove_design(req['userName'], req['designName'])
         
         result = {'delete': 'SUCCESS'} # error handling required
+
+        log('DELETE', 'design', req['designName'], 'by', req['userName'])        
         
         return json.dumps(result)
 
@@ -90,5 +107,5 @@ while True:
     conn.sendall(res)
 
 conn.close()
-
+log('---- CLEANING UP ----', '\n')
 cleanup()

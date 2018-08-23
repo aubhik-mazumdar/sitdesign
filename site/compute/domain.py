@@ -2,6 +2,7 @@ import json
 import numpy as np
 import operator
 import pickle
+import random
 import os
 
 from design import Design
@@ -42,7 +43,13 @@ class DesignDomain(object):
         self.dmat = self.compute_matrix()
 
     def get_last_design(self, user): # user_name -> full_name
-        return (user, self.users[user][-1])
+        if user in self.users:
+            if len(self.users[user]) == 0:
+                return None
+            else:
+                return (user, self.users[user][-1])
+        else:
+            return None
 
     def remove_design(self, user, design_name):
         # Need to test this function
@@ -54,6 +61,8 @@ class DesignDomain(object):
 
     def recommend(self, user, condition, n):
         last_design = self.get_last_design(user)
+        if not last_design:
+            return []
         dists = self.dmat[last_design]
         revr = condition == 'farthest'
         s = sorted(dists.items(), key=operator.itemgetter(1), reverse=revr)
