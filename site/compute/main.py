@@ -3,6 +3,7 @@ import json
 import ntpath
 import pickle
 import socket
+import errno
 
 from design import Design
 from domain import DesignDomain
@@ -40,6 +41,7 @@ def handle_request(req):
 
         result = des.to_stl(req['fileDir'])
         result['properties'] = des.project()
+        result['score'] = des.score()
 
         # compute distance matrix and other information
         Dom.add_design(des)
@@ -92,7 +94,13 @@ print 'Listening on PORT ', PORT
 while True:
     conn, addr = s.accept()
     print 'Client: ', addr
-    data = conn.recv(1024)
+
+    try:
+        data = conn.recv(1024)
+    except socket.error as (code, msg):
+        continue
+        # if code != errno.EINTR:
+        #     continue
 
     if data == 'CLOSE':
         break

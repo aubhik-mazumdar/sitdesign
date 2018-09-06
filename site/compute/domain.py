@@ -55,7 +55,8 @@ class DesignDomain(object):
         # Need to test this function
         print('Function not fully implemented!!!!!!!!') #!!!!!!!!!!!!!!
         # Need to check if user and design_name actually exist
-        del self.designs[(user, design_name)]
+        if (user, design_name) in self.designs:
+            del self.designs[(user, design_name)]
         if self.users[user]:
             self.users[user].pop()
 

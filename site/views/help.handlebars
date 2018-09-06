@@ -1,0 +1,115 @@
+<div class="col">
+  <h2>Submissions</h2>
+  <p>
+    We are looking for novel designs of L-shaped brackets. Please
+    submit your design in the <strong>STEP</strong> file format.
+    Make suure to indicate in the submission description <i>how</i>
+    and <i>why</i> you came up with the design.
+  </p>
+
+  <p>
+    We are looking for designs that conform to this general shape.
+    Feel free to rotate and play around with this design to get an
+    idea.
+  </p>
+
+  <p id='fileName'>{{example}}</p>
+  <div class="container">
+    <div id='mainFrame' align='center'>
+    </div>
+  </div>
+
+  <h3>Reusing other designs</h3>
+  <p>
+    You can "remix" designs that are shown in your
+    <i>Recommendations</i> page. You will be able to download these
+    designs and modify them in ways you see fit. When remixing a
+    design, please take note of its URL and mention that in your
+    submission. You can remix more than one design and can also remix
+    your own designs. If you are remixing multiple designs please make
+    sure list out all of them in the submission.
+  </p>
+  <p>
+    Remixing is a great way to explore interesting design
+    choices.
+  </p>
+  <hr/>
+  <h3>FAQ</h3>
+
+  <h5>Dimensions of the design?</h5>
+  <p>
+    We recommend you keep the design within 4 in &times; 4 in &times; 4 in.
+  </p>
+
+  <h5>Can I submit files in a format other than STEP?</h5>
+  <p>
+    Not yet. Please submit files in the STEP file format. Most CAD
+    software packages will be able to export designs to this format.
+  </p>
+
+  <h5>Any recommendations for CAD software?</h5>
+  <p>
+    Yes! Consider using <a href="https://www.freecadweb.org/">FreeCAD</a>. It
+    is mature and available on all major operating systems. We use FreeCAD
+    internally to evaluate the designs you submit.
+  </p>
+
+  <h5>How do you score designs?</h5>
+  <p>
+    We run a finite element analysis on your design. The score that you see
+    accounts for the maximum stresses on your model when subject to a set of
+    constraints. A higher score is better. Keep in mind that the scoring is
+    done programmatically, and might fail on some designs. Please let us know
+    if our scoring method fails on any of your designs.
+  </p>
+
+  <h5>Other questions?</h5>
+  <p>
+    Please send us an email using the <i>Contact Us</i> page. We will get back
+    to you as soon as possible.
+  </p>
+</div>
+<script type="text/javascript" src="/jsc3d.js"></script>
+<script type="text/javascript" src="/jsc3d.touch.js"></script>
+<script type="text/javascript" src="/jsc3d.console.js"></script>
+<script type="text/javascript" src="/external/Sonic/sonic.js"></script>
+<script type="text/javascript">
+    
+    var backGroundColor1 = "#FFFFFF";
+    var backGroundColor2 = "#FFFFFF";
+    var modelColor = "#CAA618";
+
+    var div = document.getElementById('mainFrame');
+    var filename = document.getElementById('fileName').innerText;
+
+    window.onload = function () {
+
+        let x = document.getElementById('fileName');
+        let tempPath = x.innerHTML;
+        x.style.display = 'none';
+
+        var d = document.createElement('canvas');
+        d.setAttribute('width', '200%');
+        d.setAttribute('height', '200%');
+        d.setAttribute('class', 'img-fluid');
+
+        // var div = document.getElementById('mainFrame');
+
+        div.appendChild(d);
+        var viewer = new JSC3D.Viewer(d);
+        var logoTimerID = 0;
+        viewer.setParameter('SceneUrl', tempPath);
+        viewer.setParameter('InitRotationX', -45);
+        viewer.setParameter('InitRotationY', 45);
+        viewer.setParameter('InitRotationZ', -90);
+        viewer.setParameter('ModelColor', modelColor);
+        viewer.setParameter('BackgroundColor1', backGroundColor1);
+        viewer.setParameter('BackgroundColor2', backGroundColor2);
+        viewer.setParameter('RenderMode', 'flat');
+        viewer.setParameter('Renderer', 'webgl');
+        //viewer.setParameter('SphereMapUrl', 'chrome.jpg');
+        viewer.setParameter('ProgressBar', 'off');
+        viewer.init();
+        viewer.update();
+    }
+</script>

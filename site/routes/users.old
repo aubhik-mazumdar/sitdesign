@@ -1,0 +1,106 @@
+/* global distance matrix */
+var DISTANCE_MATRIX = new Object();
+
+/* global list of all designs */
+var DESIGNS = new Array();
+
+/* global number of designs to recommend */
+var N_RECOMMS = 3;
+
+/* updateDistanceMatrix: To be run everytime a new design is uploaded
+   relies on the global variable DESIGNS. Updates global variable
+   DISTANCE_MATRIX */
+function updateDistanceMatrix() {
+    let parameters = ['volume', 'avg_face_area', 'nfaces']; /* Read from a config file later on */
+
+    /* Iterate through the list of all DESIGNS */
+    for (let i of DESIGNS) {
+	let ip = stripPath(i.design.path);
+	DISTANCE_MATRIX[ip] = {};
+	for (let j of DESIGNS) {
+	    let jp = stripPath(j.design.path);
+	    if (ip == jp) /* Distance between same designs is 0 */
+		continue;
+	    let dist = calculateDistance(i.design, j.design);
+	    DISTANCE_MATRIX[ip][jp] = dist;
+	}
+    }
+    return;
+}
+
+/* startupCompute: Perform computations that are currently necessary
+   at startup. This includes computing the distance matrix and updating
+   the list of all designs.
+   ! This is a temporary function and should be removed at a later stage */
+function startupCompute() {
+    User.find({}, (err, users) => {
+	console.log(users);
+	// DESIGNS = new Array();
+	for (let user of users) {
+	    console.log(user);
+	    for (let design of user.files) {
+		DESIGNS.push({'user': user.username, 'design': design});		
+	    }
+	}
+	updateDistanceMatrix();
+	console.log("DISTANCE MATRIX");
+	console.log(DISTANCE_MATRIX);
+        globalLog('STARTUP', 'computed distance matrix');
+    });
+}
+
+// startupCompute(); /* !!!!!!!!!!!!!!!!!!! */
+
+/* Returns L2 norm. Each design is represented by the tuple
+   (log(volume), log(avg_face_area), nfaces) */
+function calculateDistance(d1, d2) {
+    let v = (d1.volume - d2.volume)**2;
+    let f = (d1.nfaces - d2.nfaces)**2;
+    let a = (d1.avg_face_area - d2.avg_face_area)**2;
+    return Math.sqrt(v + f + a);
+}
+
+/* recommend :: UserInfo -> [Designs]
+   relies on global variable DISTANCE_MATRIX and N_RECOMMS */
+function recommend(user) {
+    console.log("DISTANCE MATRIX:");
+    console.log(DISTANCE_MATRIX);
+    let n_submits = user.files.length;
+
+    if (n_submits == 0) {
+	console.log("RECOMMEDING");
+	let r = DESIGNS.slice().sort(() => .5 - Math.random()).slice(0, N_RECOMMS);
+	console.log(r);
+	return r.map((e) => e.design.path);
+    }
+    
+    let prev_submit = user.files[n_submits-1]; /* prev_submit :: Design */
+    let prev = stripPath(prev_submit.path);
+
+    console.log("RECOMMENDING FOR USER: " + user.username);
+    console.log("PREVIOUS DESIGN: " + prev);
+    console.log("DISTANCES :-");
+    console.log(DISTANCE_MATRIX[prev]);
+
+    let dists = DISTANCE_MATRIX[prev];
+    /* Sort distances and use user.condition to return appropriate results */
+    let tmp = new Array();
+    for (let o in dists)
+	tmp.push([o, dists[o]]);
+
+    if (user.condition == 'nearest')
+	tmp.sort((a,b) => a[1] - b[1]); /* sorts in ascending order */
+    else
+	tmp.sort((a,b) => b[1] - a[1]);
+
+    let diffdsgn = (e) => user.files.map((d) => d.path).indexOf(e) == -1
+    console.log("RECOMMENDATIONS: ");
+    console.log(tmp.map((e) => e[0] + '.stl').filter(diffdsgn).slice(0, N_RECOMMS));
+    return tmp.map((e) => e[0] + '.stl').filter(diffdsgn).slice(0, N_RECOMMS);
+}
+
+/* Might have to change this function based on path naming conventions
+   As of now, we can expect this to remove '.stl' from a path */
+function stripPath(p) {
+    return p.substring(0, p.length-4);
+}

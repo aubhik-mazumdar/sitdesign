@@ -34,21 +34,29 @@
         <li class="nav-item">
           <a class="nav-link disabled" href="/users/logout">Logout</a>
         </li>
+        
+
         {{!-- <li class="nav-item">
           <form action="/users/upload" class="form-inline my-2 my-lg-0">
             <button class="btn btn-info my-2 my-sm-0 navbar-btn" type="submit">Upload</button>
           </form>
         </li> --}}
+        
+        
         <li class="nav-item">
           <form action="/users/altupload" class="form-inline my-2 my-lg-0">
             <button class="btn btn-info my-2 my-sm-0 navbar-btn" type="submit">Upload</button>
           </form>
         </li>
+
+
         {{!-- <li class="nav-item" style='padding-left:1px'>
           <form action="/users/explore" class="form-inline my-2 my-lg-0">
             <button class="btn btn-primary navbar-btn" type="submit">Show All</button>
           </form>
         </li> --}}
+
+        
         <li class="nav-item" style='padding-left:1px'>
           <form action='/users/recommendations' class="from-inline my-2 my-lg-0">
             <button class="btn btn-primary navbar-btn" type="submit">Recommendations</button>
@@ -57,6 +65,12 @@
         <li class="nav-item">
           <a class="nav-link" href="/users/userinfo">Profile</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/users/help">Information</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/users/contact">Contact Us</a>
+        </li>        
         {{else}}
         <li class="nav-item">
           <a class="nav-link active" href="/users/login">Login</a>
@@ -65,9 +79,6 @@
           <a class="nav-link disabled" href="/users/register">Sign Up</a>
         </li>
         {{/if}}
-        <li class="nav-item">
-          <a class="nav-link" href="/users/contact">Contact Us</a>
-        </li>
       </ul>
     </div>
   </nav>

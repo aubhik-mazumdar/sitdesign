@@ -323,7 +323,8 @@ router.post('/altupload', (req, res) => {
 		    path: path.join('/', userName, fileName.replace(/.stp|.step/i,'.stl')),
 		    type: req.body.type,
 		    urls: req.body.urls,
-		    properties: result.properties
+		    properties: result.properties,
+		    score: result.score
 		}
 		console.log(designObj);
                 user.files.push(designObj);
@@ -466,7 +467,7 @@ router.post('/login',
 
 router.get('/logout', function (req, res) {
     //L0 2/4/2018 @ 12:23:43
-    logger.userLog('LOGOUT', '\n', req.user.username);
+    // logger.userLog('LOGOUT', '\n', req.user.username);
     req.logout();
     req.flash('success_msg', 'You are now logged out');
     res.redirect('/users/login');
@@ -716,6 +717,12 @@ router.post('/:userId/:designName/time', (req, res) => {
     
     console.log(value);    
     res.send('done');
+});
+
+router.get('/help', (req, res) => {
+    res.render('help', {
+	example: '/example.stl'
+    });
 });
 
 
