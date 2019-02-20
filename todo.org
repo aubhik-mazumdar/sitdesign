@@ -1,5 +1,10 @@
 * Tasks
 
+** TODO Semantic Distance Calculations                               :python:
+
+- [ ] Test on sample descriptions from Summer
+- [ ] Integrate into `compute.py'
+
 ** TODO Recommendation Function [1/2]                               :python:
 
 - [X] Don't show own designs in recommendations
@@ -51,5 +56,3 @@ file since merging information from many will be time consuming.
 
 Time activity spent on each design. Which log file should you store
 this in?
-
-
