@@ -264,6 +264,7 @@ router.post('/altupload', (req, res) => {
     let userName = req.user.username;
     let fileDir = path.join(__dirname, '..', 'files', userName);
     let filePath = path.join(fileDir, fileName);
+    let userDesc = req.body.text
     console.log('filename: ', fileName);
     console.log('username: ', userName);
     console.log('filedir: ', fileDir);
@@ -286,7 +287,8 @@ router.post('/altupload', (req, res) => {
 			       , fileName
 			       , filePath
 			       , userName
-			       , fileDir};
+			       , fileDir
+			       , userDesc};
 		console.log(JSON.stringify(request));
 		client.write(JSON.stringify(request));
 		req.flash('success_msg', 'File upload successful. Please wait a moment for it to reflect on your homepage.');
