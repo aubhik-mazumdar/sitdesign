@@ -1,5 +1,13 @@
 * Tasks
 
+** TODO Call `cleanup' after exit.
+
+** TODO Keep connection between js and python open
+
+** TODO Configuration file
+
+- [ ] Material information for fea script
+
 ** TODO Semantic Distance Calculations                               :python:
 
 - [ ] Test on sample descriptions from Summer
