@@ -91,7 +91,6 @@ def handle_request(req):
 def cleanup():
     print('Cleaning stuff up!')
     DesDom.serialize()
-    SemDom.serialize()
 
 HOST, PORT = '127.0.0.1', 8080
 
