@@ -1,5 +1,4 @@
 FROM ubuntu:18.04
-# FROM mongo:4.0.6
 
 # Set up Python versions -- we need very specific versions of Python
 ENV PYTHON_VERSION 2.7.15
@@ -63,14 +62,8 @@ RUN cd /sitdesign/site/ && npm install \
 # directory for storing user files -- required by application
 RUN mkdir -p /sitdesign/site/files
 
-# Start mongodb service
-# RUN systemctl enable mongod.service
-# RUN systemctl start mongod.service
-# RUN mongod &
-
 EXPOSE 3000
 WORKDIR /sitdesign/site
 
-# CMD ["mongod"]
 CMD ["python", "/sitdesign/site/compute/main.py"]
 CMD ["node", "/sitdesign/site/app.js"]

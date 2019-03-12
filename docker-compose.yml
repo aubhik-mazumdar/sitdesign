@@ -2,6 +2,7 @@ version: "0.1.0"
 services:
   app:
     container_name: sitdesign
+    restart: always
     build: .
     ports:
       - "4000:3000"
