@@ -92,7 +92,8 @@ def cleanup():
     print('Cleaning stuff up!')
     DesDom.serialize()
 
-HOST, PORT = '127.0.0.1', 8080
+# HOST, PORT = '127.0.0.1', 8080
+HOST, PORT = '0.0.0.0', 8080
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
