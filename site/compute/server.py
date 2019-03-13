@@ -105,7 +105,7 @@ class SitDesignTCPHandler(SocketServer.BaseRequestHandler):
 
 				self.request.sendall(json.dumps(result))
 
-			with Exception as e:
+			except Exception as e:
 				print e
 		else:
 			print "{} NOT_IMPLEMENTED".format(command)
@@ -115,7 +115,7 @@ class SitDesignTCPHandler(SocketServer.BaseRequestHandler):
 			print "Serializing design domain distance matrix"
 		try:
 			DesDom.serialize()
-		with Exception as e:
+		except Exception as e:
 			print e
 
 		# TODO : Handle SemDom matrix
