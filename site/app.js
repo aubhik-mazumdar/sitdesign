@@ -12,9 +12,11 @@ var LocalStrategy = require('passport-local').Strategy;
 var mongoose = require('mongoose');
 var fs = require('fs');
 
-//mongoose.connect('mongodb://localhost/loginapp');
-//mongoose.connect('mongodb://rmn:12345@ec2-54-209-241-188.compute-1.amazonaws.com:27017/loginapp2');
-mongoose.connect('mongodb://localhost/loginapp');
+process.on('uncaughtException', (err) => {
+    console.log(err);
+});
+
+mongoose.connect('mongodb://mongo:27017/loginapp');
 var db = mongoose.connection;
 
 var routes = require('./routes/index');
