@@ -1,4 +1,7 @@
 version: "0.1.0"
+volumes:
+  data:
+    driver: local
 services:
   web:
     container_name: web
@@ -11,6 +14,8 @@ services:
     links:
       - mongo
       - compute
+    volumes:
+      - data:/data
   compute:
     container_name: compute
     restart: always
@@ -20,6 +25,8 @@ services:
     expose:
       - "8080"
     tty: true
+    volumes:
+      - data:/data
   mongo:
     container_name: mongo
     image: mongo
