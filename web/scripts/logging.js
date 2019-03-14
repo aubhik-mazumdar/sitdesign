@@ -29,7 +29,7 @@ function userLog(action, info, name) {
 
     let data = '\n' + timeStamp + ' : ' + action + ' - ' + info;
 
-    fs.open(filePath, 'a', (err, fd) => {
+    fs.open(filePath, 'a+', (err, fd) => {
 	if (err)
 	    console.log(errMsg);
 

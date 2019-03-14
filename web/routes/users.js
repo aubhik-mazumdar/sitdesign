@@ -49,9 +49,9 @@ passport.deserializeUser(function (id, done) {
 });
 
 
-let PORT = 8080;
-// let HOST = '127.0.0.1';
-let HOST = '0.0.0.0';
+let HOST = process.env['COMPUTE_PORT_8080_TCP_ADDR'];
+let PORT = Number(process.env['COMPUTE_PORT_8080_TCP_PORT']);
+
 
 /* Work with conditions
  * For now we place each user alternatively in two conditions -

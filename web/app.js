@@ -11,6 +11,7 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var mongoose = require('mongoose');
 var fs = require('fs');
+var net = require('net');
 
 process.on('uncaughtException', (err) => {
     console.log(err);
@@ -115,5 +116,20 @@ app.listen(app.get('port'), function () {
 
 console.log("DIRNAME")
 console.log(__dirname)
+
+// Testing connection with python server
+let HOST = process.env['COMPUTE_PORT_8080_TCP_ADDR'];
+let PORT = Number(process.env['COMPUTE_PORT_8080_TCP_PORT']);
+const client = net.createConnection({port: PORT, host:HOST}, () => {
+    console.log('Connected to COMPUTE server');
+    client.write(JSON.stringify({'command': 'TEST'}));
+});
+client.on('data', (data) => {
+    console.log('Received: ', data);
+    client.end();
+});
+client.on('end', () => {
+    console.log('Disconnected from COMPUTE server');
+});
 
 module.exports;

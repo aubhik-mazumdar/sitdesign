@@ -12,7 +12,7 @@ from semantic import Semant, SemanticDomain
 # Constants
 VERBOSE = True
 PRINT_MAT = False
-LOG_FILE = '../system-log.log'
+LOG_FILE = './system-log.log'
 DES_DOMAIN_FILE = './design-domain.pickle'
 SEM_DOMAIN_FILE = './semantic-domain.pickle'
 RECOMM_NUM = 3
@@ -25,7 +25,7 @@ render_path = lambda des: design_render_path(*des)
 def log(*args):
     val = reduce(lambda a, x: a + ' ' + str(x), args, '')
     print val
-    with open(LOG_FILE, 'a') as f:
+    with open(LOG_FILE, 'a+') as f:
         f.write(str(datetime.datetime.now()) + ' ' + val + '\n')
 
 
@@ -121,6 +121,6 @@ class SitDesignTCPHandler(SocketServer.BaseRequestHandler):
 		# TODO : Handle SemDom matrix
 
 if __name__ == "__main__":
-	HOST, PORT = "localhost", 8080
+	HOST, PORT = "0.0.0.0", 8080
 	server = SocketServer.TCPServer((HOST, PORT), SitDesignTCPHandler)
 	server.serve_forever()

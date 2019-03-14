@@ -19,10 +19,9 @@ import argparse
 # import materials
 import warnings
 
-warnings.filterwarnings('ignore')
-# sys.path.append("C:\\Users\\Aubhik\\Desktop\\JN\\FreeCAD_0.17.13433_x64_dev_win\\FreeCAD_0.17.13433_x64_dev_win\\bin")
-# sys.path.append("C:\\Users\\Aubhik\\Desktop\\JN\\FreeCAD_0.17.13433_x64_dev_win\\FreeCAD_0.17.13433_x64_dev_win\\Mod\\Fem")
+INTERACTIVE = False
 
+warnings.filterwarnings('ignore')
 sys.path.append('/usr/lib/freecad/lib')
 
 pla = { 'Name' : 'PLA'
@@ -321,14 +320,15 @@ def autofea_run(filepath):
     results['score'] = PLA_YIELD_STRENGTH/max(run.PrincipalMax)
     return results
 
-# parser = argparse.ArgumentParser(description='Automated FEM analysis on L-Brackets')
-# parser.add_argument('input',metavar='input-file',help='CAD file (STEP format)')
-# parser.add_argument('-s','--save-stl',nargs='?',const=True,help='Directory to store STL output in')
-# # parser.add_argument('-r','--result-file',nargs='?',const=True,help='Directory to store results file in')
+if INTERACTIVE:
+	parser = argparse.ArgumentParser(description='Automated FEM analysis on L-Brackets')
+	parser.add_argument('input',metavar='input-file',help='CAD file (STEP format)')
+	parser.add_argument('-s','--save-stl',nargs='?',const=True,help='Directory to store STL output in')
+	# parser.add_argument('-r','--result-file',nargs='?',const=True,help='Directory to store results file in')
 
-# args = parser.parse_args()
-# resu = create_and_run_json_out(args.input, args.save_stl)
+	args = parser.parse_args()
+	resu = create_and_run_json_out(args.input, args.save_stl)
 
-# print resu
-# sys.stdout.flush()    
+	print resu
+	sys.stdout.flush()    
 
