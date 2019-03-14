@@ -213,7 +213,7 @@ router.post('/register', function (req, res) {
 			     });
 	});
 	req.flash('success_msg', 'You are registered, please login');
-	res.redirect('/users/login');
+g	res.redirect('/users/login');
     }
 });
 
@@ -282,7 +282,11 @@ router.post('/altupload', (req, res) => {
 	    res.render('altupload', { errors });
 	} else {
 	    input.mv(filePath, (err) => {
-		if (err) throw err; /* !!!!!!!!!!!!!!!!!! */
+		if (err) {
+		    console.log(err);
+		    req.flash('err_msg', 'File upload failed. Please try again.');
+		    res.redirect('/users/altupload');
+		}
 
 		let request = {command: 'UPLOAD'
 			       , fileName
@@ -296,19 +300,6 @@ router.post('/altupload', (req, res) => {
 		res.redirect('/users/homepage');
 	    });
 	}
-
-	// input.mv(filePath, (err) => {
-	//     if (err) throw err; /* !!!!!!!!!!!!!!!!!!!!!!! */
-	//     let request = {command: 'UPLOAD'
-	// 		   , fileName: fileName
-	// 		   , filePath: filePath
-	// 		   , userName: userName
-	// 		   , fileDir: fileDir};
-	//     console.log(JSON.stringify(request));
-	//     client.write(JSON.stringify(request));
-	//     req.flash('success_msg', 'File upload successful. Please wait a moment for it to reflect on your homepage.');
-	//     res.redirect('/users/homepage');
-	// });
     });
     
     client.on('data', (data) => {
