@@ -1,13 +1,25 @@
 version: "0.1.0"
 services:
-  app:
-    container_name: sitdesign
+  web:
+    container_name: web
     restart: always
-    build: .
+    build: ./web/
     ports:
       - "4000:3000"
+    expose:
+      - "3000"
     links:
       - mongo
+      - compute
+  compute:
+    container_name: compute
+    restart: always
+    build: ./compute/
+    ports:
+      - "8080"
+    expose:
+      - "8080"
+    tty: true
   mongo:
     container_name: mongo
     image: mongo
