@@ -213,7 +213,7 @@ router.post('/register', function (req, res) {
 			     });
 	});
 	req.flash('success_msg', 'You are registered, please login');
-g	res.redirect('/users/login');
+	res.redirect('/users/login');
     }
 });
 
