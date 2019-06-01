@@ -19,15 +19,15 @@ import argparse
 # import materials
 import warnings
 
-INTERACTIVE = False
+INTERACTIVE = True
 
 warnings.filterwarnings('ignore')
 sys.path.append('/usr/lib/freecad/lib')
 
 pla = { 'Name' : 'PLA'
-      , 'YoungsModulus' : '3640 MPa'
-      , 'PoissonRatio' : '0.360'
-      , 'Density' : '1300 kg/m^3'}
+    , 'YoungsModulus' : '3640 MPa'
+    , 'PoissonRatio' : '0.360'
+    , 'Density' : '1300 kg/m^3'}
 
 PLA_YIELD_STRENGTH = 70 # MPa
 
@@ -46,6 +46,8 @@ class IncorrectFileType(Exception):
 
 class AutoFEA:
     def __init__(self, infile):
+        self.prefs = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Fem/General")
+        self.prefs.SetString("WorkingDir","/home/rnagasam/res/compute/.solver")
         self.name = ntpath.basename(infile) # includes '.step'
         self.name = os.path.splitext(self.name)[0]
         self.cad_file = infile
@@ -85,7 +87,7 @@ class AutoFEA:
 
     def create_analysis(self):
         self.analysis = ObjectsFem.makeAnalysis(self.doc, "Analysis")
-        print "ANALYSIS: ", self.analysis
+        print("ANALYSIS: ", self.analysis)
 
     def create_solver(self):
         solver = ObjectsFem.makeSolverCalculix(self.doc, "CalculiX")
@@ -240,18 +242,35 @@ class AutoFEA:
         self.analysis.addObject(force_constraint)
         self.analysis.addObject(fixed_constraint)
 
-    def run(self):
-        # self.doc.recompute()
-        fea = ccxtools.FemToolsCcx(analysis=self.analysis, solver=self.solver, test_mode=False)
-        # fea.setup_working_dir('solver-tmp')
+    def fea_run(self):
+        fea = ccxtools.FemToolsCcx(analysis=self.analysis,solver=self.solver,test_mode=False)
+        fea.setup_working_dir('./.solver')
         self.doc.recompute()
-        message = fea.update_objects()
-        if not message:
-            fea.reset_all()
-            fea.run()
-            fea.load_results()
+        fea.update_objects()
+        message = fea.check_prerequisites()
+        if message:
+            error_message = "CalculiX was not started due to missing prerequisites:\n{}\n".format(message)
+            FreeCAD.Console.PrintError(error_message)
+            return False
         else:
-            raise Exception('AutoFEA -- error while running FEA analysis - {}'.format(message))
+            fea.write_inp_file()
+            if fea.inp_file_name == "":
+                error_message = "Error on writing CalculiX input file.\n"
+                FreeCAD.Console.PrintError(error_message)
+                return False
+            else:
+                FreeCAD.Console.PrintMessage("Writing CalculiX input file completed.\n")
+                ret_code = fea.ccx_run()
+                if ret_code != 0:
+                    error_message = "CalculiX finished with error {}.\n".format(ret_code)
+                    FreeCAD.Console.PrintError(error_message)
+                    return False
+                else:
+                    fea.load_results()
+        return True
+
+    def run(self):
+        self.fea_run()
 
         for mem in self.analysis.Group:
             if mem.isDerivedFrom('Fem::FemResultObject'):
@@ -303,7 +322,7 @@ def create_and_run_json_out(filepath, savedir='./'):
     results['MaxPrincipalMed'] = max(run.PrincipalMed)
     results['MaxPrincipalMin'] = max(run.PrincipalMin)
 
-    print results
+    print(results)
 
     return json.dumps(results)
 
@@ -321,14 +340,13 @@ def autofea_run(filepath):
     return results
 
 if INTERACTIVE:
-	parser = argparse.ArgumentParser(description='Automated FEM analysis on L-Brackets')
-	parser.add_argument('input',metavar='input-file',help='CAD file (STEP format)')
-	parser.add_argument('-s','--save-stl',nargs='?',const=True,help='Directory to store STL output in')
-	# parser.add_argument('-r','--result-file',nargs='?',const=True,help='Directory to store results file in')
+    parser = argparse.ArgumentParser(description='Automated FEM analysis on L-Brackets')
+    parser.add_argument('input',metavar='input-file',help='CAD file (STEP format)')
+    parser.add_argument('-s','--save-stl',nargs='?',const=True,help='Directory to store STL output in')
+    # parser.add_argument('-r','--result-file',nargs='?',const=True,help='Directory to store results file in')
 
-	args = parser.parse_args()
-	resu = create_and_run_json_out(args.input, args.save_stl)
-
-	print resu
-	sys.stdout.flush()    
-
+    args = parser.parse_args()
+    print(args)
+    resu = create_and_run_json_out(args.input, args.save_stl)
+    print(resu)
+    sys.stdout.flush()
