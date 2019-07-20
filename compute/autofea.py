@@ -47,7 +47,11 @@ class IncorrectFileType(Exception):
 class AutoFEA:
     def __init__(self, infile):
         self.prefs = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Fem/General")
-        self.prefs.SetString("WorkingDir","/home/rnagasam/res/compute/.solver")
+        self.solver_dir = "/home/ubuntu/sitdesign/compute/.solver"
+        self.prefs.SetString("WorkingDir",self.solver_dir)
+        if not os.path.exists(self.solver_dir):
+            os.makedirs(self.solver_dir)
+
         self.name = ntpath.basename(infile) # includes '.step'
         self.name = os.path.splitext(self.name)[0]
         self.cad_file = infile
