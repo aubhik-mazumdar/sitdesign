@@ -17,7 +17,8 @@ process.on('uncaughtException', (err) => {
     console.log(err);
 });
 
-mongoose.connect('mongodb://mongo:27017/loginapp');
+//mongoose.connect('mongodb://mongo:27017/loginapp');
+mongoose.connect('mongodb://localhost/loginapp');
 var db = mongoose.connection;
 
 var routes = require('./routes/index');
@@ -118,18 +119,18 @@ console.log("DIRNAME")
 console.log(__dirname)
 
 // Testing connection with python server
-let HOST = process.env['COMPUTE_PORT_8080_TCP_ADDR'];
-let PORT = Number(process.env['COMPUTE_PORT_8080_TCP_PORT']);
-const client = net.createConnection({port: PORT, host:HOST}, () => {
-    console.log('Connected to COMPUTE server');
-    client.write(JSON.stringify({'command': 'TEST'}));
-});
-client.on('data', (data) => {
-    console.log('Received: ', data);
-    client.end();
-});
-client.on('end', () => {
-    console.log('Disconnected from COMPUTE server');
-});
+// let HOST = process.env['COMPUTE_PORT_8080_TCP_ADDR'];
+// let PORT = Number(process.env['COMPUTE_PORT_8080_TCP_PORT']);
+// const client = net.createConnection({port: PORT, host:HOST}, () => {
+//     console.log('Connected to COMPUTE server');
+//     client.write(JSON.stringify({'command': 'TEST'}));
+// });
+// client.on('data', (data) => {
+//     console.log('Received: ', data);
+//     client.end();
+// });
+// client.on('end', () => {
+//     console.log('Disconnected from COMPUTE server');
+// });
 
 module.exports;
