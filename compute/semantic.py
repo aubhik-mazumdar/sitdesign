@@ -16,15 +16,15 @@ class SemanticDomain(object):
 
     def initialize(self):
         if os.path.exists(self.savefile):
-            print 'Loading cached information -- SEMANTIC-DOMAIN'
+            print('Loading cached information -- SEMANTIC-DOMAIN')
             with open(self.savefile, 'rb') as f:
                 state = pickle.load(f)
 
             self.users = state['users']
             self.desc = state['desc']
             self.dmat = self.compute_matrix()
-            print 'Cached Distance Matrix: '
-            print self.dmat
+            print('Cached Distance Matrix: ')
+            print(self.dmat)
 
     def add_desc(self, semant):
         self.desc[(semant.user, semant.design)] = self.nlp(semant.desc)
@@ -80,6 +80,6 @@ class SemanticDomain(object):
             try:
                 pickle.dump(state, f)
             except Exception as e:
-                print "Serialization failed: ", str(e)
+                print("Serialization failed: ", str(e))
                 return False
         return True

@@ -1,4 +1,5 @@
-import SocketServer
+#import SocketServer
+import socketserver
 import datetime
 import errno
 import json
@@ -24,7 +25,7 @@ render_path = lambda des: design_render_path(*des)
 
 def log(*args):
     val = reduce(lambda a, x: a + ' ' + str(x), args, '')
-    print val
+    print(val)
     with open(LOG_FILE, 'a+') as f:
         f.write(str(datetime.datetime.now()) + ' ' + val + '\n')
 
@@ -39,11 +40,11 @@ class SitDesignTCPHandler(SocketServer.BaseRequestHandler):
 		command = self.data['command']
 		
 		if VERBOSE:
-			print "{} asked: {}".format(self.client_address[0], command)
+			print("{} asked: {}".format(self.client_address[0], command))
 
 		if command == u'NEW-USER':
 			if VERBOSE:
-				print "NEW-USER command not implemented"
+				print("NEW-USER command not implemented")
 			
 		elif command == u'UPLOAD':
 			des = Design(self.data['filePath'],
@@ -54,7 +55,7 @@ class SitDesignTCPHandler(SocketServer.BaseRequestHandler):
 						  self.data['userDesc'])
 
 			if VERBOSE:
-				print "Design projection: {}".format(des.project())
+				print("Design projection: {}".format(des.project()))
 
 			result = des.to_stl(self.data['fileDir'])
 			result['properties'] = des.project()
@@ -65,10 +66,10 @@ class SitDesignTCPHandler(SocketServer.BaseRequestHandler):
 			SemDom.add_desc(desc)
 
 			if VERBOSE and PRINT_MAT:
-				print 'Shape Matrix:'
-				print DesDom.dmat
-				print 'Semantic Matrix:'
-				print SemDom.dmat
+				print('Shape Matrix:')
+				print(DesDom.dmat)
+				print('Semantic Matrix:')
+				print(SemDom.dmat)
 
 			log('UPLOAD', self.data['filePath'], 'by', self.data['userName'],
 				'\n\tPROPERTIES', str(des.project()))
@@ -84,8 +85,8 @@ class SitDesignTCPHandler(SocketServer.BaseRequestHandler):
 			result = {'recommendations': paths}
 
 			if VERBOSE:
-				print "Recommending {} to {}".format(result,
-													 self.data['userName'])
+				print("Recommending {} to {}".format(result,
+                                                         self.data['userName']))
 
 			log('RECOMMEND', 'to', self.data['userName'],
 				'\n\tDESIGNS', str(paths))
@@ -106,17 +107,17 @@ class SitDesignTCPHandler(SocketServer.BaseRequestHandler):
 				self.request.sendall(json.dumps(result))
 
 			except Exception as e:
-				print e
+				print(e)
 		else:
-			print "{} NOT_IMPLEMENTED".format(command)
+			print("{} NOT_IMPLEMENTED".format(command))
 
 	def finish(self):
 		if VERBOSE:
-			print "Serializing design domain distance matrix"
+			print("Serializing design domain distance matrix")
 		try:
 			DesDom.serialize()
 		except Exception as e:
-			print e
+			print(e)
 
 		# TODO : Handle SemDom matrix
 
