@@ -32,7 +32,7 @@
     "passport-http": "^0.3.0",
     "passport-local": "^1.0.0",
     "python-shell": "^0.5.0",
-    "three": "^0.90.0",
+    "three": "^0.125.0",
     "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
