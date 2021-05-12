@@ -27,7 +27,7 @@
     "jsdoc": "^3.6.3",
     "mongodb": "^3.0.1",
     "mongoose": "^5.6.5",
-    "nodemailer": "^4.6.5",
+    "nodemailer": "^6.4.16",
     "passport": "^0.4.0",
     "passport-http": "^0.3.0",
     "passport-local": "^1.0.0",
