@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "Buffer": "0.0.0",
-    "async": "^2.6.0",
+    "async": "^2.6.4",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.2",
     "bulma": "^0.6.2",
